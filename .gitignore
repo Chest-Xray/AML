@@ -5,5 +5,5 @@ __pycache__/
 venv/
 .env
 data/images/
-data/bbox/
+data/bbox_images/
 data/author_pdfs/
