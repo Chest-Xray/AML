@@ -11,9 +11,9 @@ def get_bbox_path():
     script_path = os.path.dirname(os.path.abspath(__file__))
     return os.path.normpath(os.path.join(script_path, "../../data/bbox_images/"))
 
-def draw_bbox(draw, disease, x, y, w, h):
-    draw.rectangle((x, y, x+w, y+h), outline = "blue", width = 2)
-    draw.text((x, y-5), disease, fill = "red")
+def draw_bbox(draw, disease, x, y, w, h, thickness = 2):
+    draw.rectangle((x, y, x+w, y+h), outline = "blue", width = thickness)
+    draw.text((x, y-10), disease, fill = "red")
 
 def draw_bboxes(img_path, group):
     img = Image.open(img_path).convert("RGB")
