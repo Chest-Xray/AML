@@ -1,25 +1,7 @@
-import numpy as np
-from os.path import abspath, dirname, normpath, join
 import pandas as pd
-from read_lists import get_data, get_train_val_data, get_test_data
+from PIL import Image
+import torch
 from torch.utils.data import Dataset
-from typing import Callable
-
-#   ▖▖  ▜         ▄▖      ▗ ▘
-#   ▙▌█▌▐ ▛▌█▌▛▘  ▙▖▌▌▛▌▛▘▜▘▌▛▌▛▌▛▘
-#   ▌▌▙▖▐▖▙▌▙▖▌   ▌ ▙▌▌▌▙▖▐▖▌▙▌▌▌▄▌
-#         ▌
-
-def get_image_path():
-    """Get image path relative to this script"""
-    script_path: str = dirname(abspath(__file__))
-    image_path = normpath(join(script_path, "../../data/images/"))
-    return image_path
-
-
-def fetch_data() -> pd.DataFrame:
-    """Return dataframe with the image name, diseases (split by '|'), and patient ID"""
-    return get_data()[["img_name", "diseases", "patient_id"]]
 
 #   ▖▖          ▄   ▗       ▗
 #   ▚▘▄▖▛▘▀▌▌▌  ▌▌▀▌▜▘▀▌▛▘█▌▜▘
@@ -27,42 +9,39 @@ def fetch_data() -> pd.DataFrame:
 #           ▄▌
 
 class XrayDataset(Dataset):
-    def __init__(self, data: pd.DataFrame = fetch_data()) -> None:
-        self.data: pd.DataFrame = data
-        self.patient_ids: list[int] = (
-            self.data["patient_id"].unique().tolist()
-        )
-        self.diseases: list[str] = (
-            self.data["diseases"]
-            .str.split("|")
-            .explode()
-            .str.strip()
-            .unique()
-            .tolist()
-        )
+    def __init__(
+        self,
+        dataframe: pd.DataFrame,
+        transform = None, 
+        diseases = None
+    ) -> None:
+        self.data: pd.DataFrame = dataframe.reset_index(drop = True)
+        self.transform = transform
+        if diseases is None:
+            self.diseases: list[str] = sorted(
+                self.data["diseases"].str.split("|").explode().unique()
+            )
+        else:
+            self.diseases: list[str] = diseases
+        self.disease_to_idx: dict[str, int] = {
+            disease: i for i, disease in enumerate(self.diseases)
+        }
+
 
     def __len__(self) -> int:
-        return len(self.train) + len(self.test)
-
-    def __getitem__(self, idx: int) -> pd.DataFrame:
-        return self.data.iloc[[idx]]
+        """Pretty self-explanatory"""
+        return len(self.data)
 
 
-    @property
-    def test(self) -> pd.DataFrame:
-        test_images = get_test_data()
-        test_data = self.data[self.data["img_name"].isin(test_images[0])]
-        test_data["img_path"] = get_image_path() + test_data["img_name"]
-        return test_data[["patient_id", "img_path", "diseases"]].copy()
+    def __getitem__(self, idx: int) -> tuple[Image, torch.Tensor]:
+        """Get item from dataset with dataset[n]"""
+        row: pd.Series = self.data.iloc[idx]
+        image: Image = Image.open(row["img_path"]).convert("L")
+        if self.transform:
+            image = self.transform(image)
+        target: torch.Tensor = torch.zeros(len(self.diseases))
+        for disease in row["diseases"].split("|"):
+            if disease in self.disease_to_idx:
+                target[self.disease_to_idx[disease]] = 1.0
+        return image, target
 
-    @property
-    def train(self) -> pd.DataFrame:
-        train_images = get_train_data()
-        train_data = self.data[self.data["img_name"].isin(train_images[0])]
-        train_data["img_path"] = get_image_path() + train_data["img_name"]
-        return train_data[["patient_id", "img_path", "diseases"]].copy()
-
-
-if __name__ == "__main__":
-    d = XrayDataset()
-    print(d.diseases)
