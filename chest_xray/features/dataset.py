@@ -28,8 +28,18 @@ def fetch_data() -> pd.DataFrame:
 
 class XrayDataset(Dataset):
     def __init__(self, data: pd.DataFrame = fetch_data()) -> None:
-        self.data = data
-
+        self.data: pd.DataFrame = data
+        self.patient_ids: list[int] = (
+            self.data["patient_id"].unique().tolist()
+        )
+        self.diseases: list[str] = (
+            self.data["diseases"]
+            .str.split("|")
+            .explode()
+            .str.strip()
+            .unique()
+            .tolist()
+        )
 
     def __len__(self) -> int:
         return len(self.train) + len(self.test)
@@ -37,20 +47,6 @@ class XrayDataset(Dataset):
     def __getitem__(self, idx: int) -> pd.DataFrame:
         return self.data.iloc[[idx]]
 
-
-    @property
-    def patient_ids(self) -> np.ndarray:
-        return self.data["patient_id"].unique()
-
-    @property
-    def diseases(self) -> pd.arrays.StringArray:
-        return (
-            self.data["diseases"]
-            .str.split("|")
-            .explode()
-            .str.strip()
-            .unique()
-        )
 
     @property
     def test(self) -> pd.DataFrame:
@@ -67,8 +63,6 @@ class XrayDataset(Dataset):
         return train_data[["patient_id", "img_path", "diseases"]].copy()
 
 
-
-
 if __name__ == "__main__":
     d = XrayDataset()
-    print(d.test)
+    print(d.diseases)
