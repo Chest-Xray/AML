@@ -29,7 +29,7 @@ class XrayDataset(Dataset):
 
 
     def __len__(self) -> int:
-        """Pretty self-explanatory"""
+        """Returns amount of samples in the dataset"""
         return len(self.data)
 
 
