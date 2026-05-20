@@ -1,11 +1,21 @@
 import pandas as pd
 import torch
+import wandb
+from ..features.cv import XrayCV
+from collections.abc import Iterator
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from tqdm import tqdm
 from pathlib import Path
 from chest_xray.data.chestdataset import ChestXRayDataset
 from chest_xray.data.labels import CLASSES
+
+
+BATCH_SIZE: int = 4    # play around with this on Habrok
+SEED: int = 42
+NUM_WORKERS: int = 4    # play around with this on Habrok
+K_FOLDS: int = 4
+
 
 class ModelTrainer:
     def __init__(self, model, criterion, optimizer, device):
@@ -16,56 +26,26 @@ class ModelTrainer:
         self.root = Path(__file__).parent.parent.parent
         self.image_root = self.root / "data" / "images"
         self.classes = CLASSES
-        self.batch_size = 16
+        self.batch_size = BATCH_SIZE
         self.image_size = 512
-        self.seed = 42
-        
-    def load_csv(self):
-        csv_file = self.root / "data" / "lists" / "Data_Entry_2017.csv"
-        return pd.read_csv(csv_file)
-    
+        self.seed = SEED
+        self.cv = XrayCV(BATCH_SIZE, SEED, NUM_WORKERS, K_FOLDS)
+
+
     def transform_images(self, image_size):
         return transforms.Compose([
             transforms.Resize((image_size, image_size)),
-            transforms.Grayscale(num_output_channels=3),  # Convert to grayscale 
+            transforms.Grayscale(num_output_channels=1),  # Convert to grayscale 
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.449], std=[0.226]),
         ])
         
-    def create_dataloaders(self, data, image_root, classes, transform):
-        unique_patients = data["Patient ID"].unique()
-        
-        generator = torch.Generator().manual_seed(self.seed)
-        perm = torch.randperm(len(unique_patients), generator=generator)
-        
-        unique_patients = unique_patients[perm.numpy()]
-        train_patient_count = int(0.8 * len(unique_patients))
-        
-        train_patients = set(unique_patients[:train_patient_count])
-        val_patients = set(unique_patients[train_patient_count:])
-        
-        train_data = data[data["Patient ID"].isin(train_patients)].reset_index(drop=True)
-        val_data = data[data["Patient ID"].isin(val_patients)].reset_index(drop=True)
-        
-        train_dataset = ChestXRayDataset(train_data, image_root, classes, transform)
-        val_dataset = ChestXRayDataset(val_data, image_root, classes, transform)
-        
-        train_loader = DataLoader(
-            train_dataset,
-            batch_size=self.batch_size,
-            shuffle=True,
-            num_workers=0,
-            pin_memory=torch.cuda.is_available(),
-        )
-        val_loader = DataLoader(
-            val_dataset,
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=0,
-            pin_memory=torch.cuda.is_available(),
-        )
-        return train_loader, val_loader
 
+    def yield_dataloaders(self, transform) -> Iterator[tuple[DataLoader, ...]]:
+        for train_loader, val_loader in self.cv.fold_loaders(transform):
+            yield train_loader, val_loader
+
+        
     def train_one_epoch(self, epoch, num_epochs, phase, dataloader):
         self.model.train()
 
@@ -127,14 +107,12 @@ class ModelTrainer:
 
         return running_loss / len(dataloader)
     
-    def load_data(self):
-        data = self.load_csv()
-        transform = self.transform_images(self.image_size)
-        train_loader, val_loader = self.create_dataloaders(data, self.image_root, self.classes, transform)
-        return train_loader, val_loader
 
     def train(self, num_epochs, train_loader, val_loader):
         for epoch in range(num_epochs):
             train_loss = self.train_one_epoch(epoch, num_epochs, "Phase 1", train_loader)
             val_loss = self.validate_one_epoch(epoch, num_epochs, "Phase 1", val_loader)
-            print(f"Epoch [{epoch + 1}/{num_epochs}] Phase 1 Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
+
+            print(f"Epoch [{epoch + 1}/{num_epochs}] Train: {train_loss:.4f} | Val: {val_loss:.4f}")
+
+        return train_loss, val_loss

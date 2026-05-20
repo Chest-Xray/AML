@@ -1,0 +1,68 @@
+_wandb:
+    value:
+        cli_version: 0.27.0
+        e:
+            wmpz99jed8aghdsh6j26d665fkgnifk3:
+                cpu_count: 8
+                cpu_count_logical: 16
+                cudaVersion: "13.2"
+                disk:
+                    /:
+                        total: "1965732270080"
+                        used: "1529187540992"
+                email: i.hummel.2@student.rug.nl
+                executable: /home/ids/Documents/uni/AML/venv/bin/python3
+                git:
+                    commit: 2c53fdbb6b6c384d732f541170aea4ff128b15aa
+                    remote: git@github.com:BarbaSkaffa/AML.git
+                gpu: NVIDIA GeForce RTX 3070 Laptop GPU
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ampere
+                      cudaCores: 5120
+                      memoryTotal: "8589934592"
+                      name: NVIDIA GeForce RTX 3070 Laptop GPU
+                      uuid: GPU-aaa8af79-e32a-5298-1566-d5fd90a060b0
+                host: GamerBook
+                memory:
+                    total: "15958728704"
+                os: Linux-7.0.9-1-cachyos-x86_64-with-glibc2.43
+                program: -m chest_xray.models.densenetscratch
+                python: CPython 3.14.4
+                root: /home/ids/Documents/uni/AML
+                startedAt: "2026-05-20T12:39:10.118500Z"
+                writerId: wmpz99jed8aghdsh6j26d665fkgnifk3
+        m: []
+        python_version: 3.14.4
+        t:
+            "1":
+                - 1
+                - 5
+                - 41
+                - 49
+                - 53
+                - 63
+            "2":
+                - 1
+                - 5
+                - 41
+                - 49
+                - 53
+                - 63
+            "3":
+                - 13
+                - 16
+            "4": 3.14.4
+            "5": 0.27.0
+            "12": 0.27.0
+            "13": linux-x86_64
+batch_size:
+    value: 4
+epochs:
+    value: 10
+fold:
+    value: 1
+lr:
+    value: 0.001
+model:
+    value: densenet161

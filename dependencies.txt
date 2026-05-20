@@ -5,3 +5,5 @@ numpy
 sklearn
 torch
 wandb
+tqdm
+timm
