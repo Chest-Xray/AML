@@ -1,7 +1,10 @@
 #!/bin/bash
-#SBATCH --time=24:00
+#SBATCH --time=20:00
 #SBATCH --partition=gpu
-#SBATCH --mem=16G
-#SBATCH --cpus-per-task=4
+#SBATCH --gpus-per-node=1
+#SBATCH --mem=32G
+#SBATCH --cpus=4
 
-srun python3 main.py $1
+module load CUDA-Python/12.6.2.post1-gfbf-2024a-CUDA-12.6.0
+source venv/bin/activate
+srun.py --nodes=1 --gpus-per-node=1 --time=20:00 --mem=32G --cpus=4 python3 -m main $1
