@@ -1,0 +1,73 @@
+Epoch [1/10] Fold 1 Train:   0%|          | 33/16279 [00:17<2:24:13,  1.88batch/s, loss=4.6977]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/ids/Documents/uni/AML/main.py", line 17, in <module>
+    main()
+    ~~~~^^
+  File "/home/ids/Documents/uni/AML/main.py", line 14, in main
+    classifier.trainModel()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/ids/Documents/uni/AML/chest_xray/models/xraymodelbaseclass.py", line 100, in trainModel
+    train_loss = self.modelTrainer.train_one_epoch(
+        epoch, 10, f"Fold {fold_idx+1}", train_loader
+    )
+  File "/home/ids/Documents/uni/AML/chest_xray/models/train.py", line 68, in train_one_epoch
+    outputs = self.model(images)
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torchvision/models/densenet.py", line 213, in forward
+    features = self.features(x)
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torchvision/models/densenet.py", line 122, in forward
+    new_features = layer(features)
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torchvision/models/densenet.py", line 88, in forward
+    bottleneck_output = self.bn_function(prev_features)
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torchvision/models/densenet.py", line 49, in bn_function
+    bottleneck_output = self.conv1(self.relu1(self.norm1(concated_features)))  # noqa: T484
+                                              ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+           ~~~~~~~~~~~~^
+        input,
+        ^^^^^^
+    ...<11 lines>...
+        self.eps,
+        ^^^^^^^^^
+    )
+    ^
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torch/nn/functional.py", line 2846, in batch_norm
+    return torch.batch_norm(
+           ~~~~~~~~~~~~~~~~^
+        input,
+        ^^^^^^
+    ...<7 lines>...
+        torch.backends.cudnn.enabled,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+KeyboardInterrupt

@@ -24,24 +24,25 @@ class XrayClassifierBase(torch.nn.Module):
             optimizer = torch.optim.Adam,
             lr: float = 0.001
             ) -> None:
+        super().__init__()
         self.type = type
         self.model = None
-        self._build_model()
-        self.optimizer = self.optimizer(self.model.parameters(), lr=0.001)
         self.pretrained = pretrained
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.criterion = criterion
-        self.optimizer = optimizer
         self.lr = lr
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self._build_model()
+        self.optimizer = optimizer
+        self.optimizer = self.optimizer(self.model.parameters(), lr=0.001)
+        self.criterion = criterion
         self.modelTrainer = ModelTrainer(self.model, self.criterion, self.optimizer, self.device)
 
 
     def _build_model(self):
         if self.type == "vgg16":
-            self.model = models.vgg16(weights=models.VGG16_Weights)
+            self.model = models.vgg16(weights=models.VGG16_Weights.DEFAULT)
         elif self.type == "densenet":
             if self.pretrained:
-                self.model = models.densenet161(weights=models.DenseNet161_Weights)
+                self.model = models.densenet161(weights=models.DenseNet161_Weights.DEFAULT)
             else:
                 self.model = models.densenet161(weights=None)
         else:
