@@ -17,7 +17,7 @@ K_FOLDS: int = 4
 
 class XrayClassifierBase(torch.nn.Module):
     def __init__(
-            self: XrayClassifierBase,
+            self,
             type: Literal["vgg16", "densenet"] = "vgg16",
             criterion: Callable[[tuple[torch.Tensor, torch.Tensor]],float] = AsymmetricLossMultiLabel(gamma_neg=4, gamma_pos=0, clip=0.05),
             pretrained: bool = True,
