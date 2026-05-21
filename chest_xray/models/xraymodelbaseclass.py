@@ -88,7 +88,7 @@ class XrayClassifierBase(torch.nn.Module):
     
             run = wandb.init(
                 project="chest_xray",
-                entity=f"chest_xray: {self.type}{str(self.pretrained) if self.type == `densenet` else ''}",
+                entity=f"chest_xray: {self.type}{str(self.pretrained) if self.type == 'densenet' else ''}",
                 name=f"fold_{fold_idx+1}",
                 config={
                     "fold": fold_idx + 1,
