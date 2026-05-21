@@ -1,0 +1,46 @@
+Epoch [1/10] Fold 1 Train:   0%|                                  | 0/16279 [00:01<?, ?batch/s]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/ids/Documents/uni/AML/main.py", line 17, in <module>
+    main()
+    ~~~~^^
+  File "/home/ids/Documents/uni/AML/main.py", line 14, in main
+    classifier.trainModel()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/ids/Documents/uni/AML/chest_xray/models/xraymodelbaseclass.py", line 100, in trainModel
+    train_loss = self.modelTrainer.train_one_epoch(
+        epoch, 10, f"Fold {fold_idx+1}", train_loader
+    )
+  File "/home/ids/Documents/uni/AML/chest_xray/models/train.py", line 62, in train_one_epoch
+    for batch_idx, (images, labels) in enumerate(progress_bar, start=1):
+                                       ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/tqdm/std.py", line 1181, in __iter__
+    for obj in iterable:
+               ^^^^^^^^
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torch/utils/data/dataloader.py", line 500, in __iter__
+    return self._get_iterator()
+           ~~~~~~~~~~~~~~~~~~^^
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torch/utils/data/dataloader.py", line 433, in _get_iterator
+    return _MultiProcessingDataLoaderIter(self)
+  File "/home/ids/Documents/uni/AML/venv/lib/python3.14/site-packages/torch/utils/data/dataloader.py", line 1192, in __init__
+    w.start()
+    ~~~~~~~^^
+  File "/usr/lib/python3.14/multiprocessing/process.py", line 121, in start
+    self._popen = self._Popen(self)
+                  ~~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.14/multiprocessing/context.py", line 230, in _Popen
+    return _default_context.get_context().Process._Popen(process_obj)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/multiprocessing/context.py", line 306, in _Popen
+    return Popen(process_obj)
+  File "/usr/lib/python3.14/multiprocessing/popen_forkserver.py", line 35, in __init__
+    super().__init__(process_obj)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/multiprocessing/popen_fork.py", line 20, in __init__
+    self._launch(process_obj)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/multiprocessing/popen_forkserver.py", line 58, in _launch
+    f.write(buf.getbuffer())
+    ~~~~~~~^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

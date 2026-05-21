@@ -40,15 +40,19 @@ class XrayClassifierBase(torch.nn.Module):
     def _build_model(self):
         if self.type == "vgg16":
             self.model = models.vgg16(weights=models.VGG16_Weights.DEFAULT)
+            self.model.classifier[6] = torch.nn.Linear(
+                self.model.classifier[6].in_features,
+                len(CLASSES)
+            )
         elif self.type == "densenet":
             if self.pretrained:
                 self.model = models.densenet161(weights=models.DenseNet161_Weights.DEFAULT)
             else:
                 self.model = models.densenet161(weights=None)
+            self.model.classifier = torch.nn.Linear(self.model.classifier.in_features, len(CLASSES))
         else:
             raise ValueError("Please select a model type.")
 
-        self.model.classifier = torch.nn.Linear(self.model.classifier.in_features, len(CLASSES))
 
         # take first layer
         old_first_layer = self.model.features[0]

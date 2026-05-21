@@ -1,0 +1,18 @@
+Epoch [1/10] Fold 1 Train:   1%|         | 129/16279 [00:35<1:14:28,  3.61batch/s, loss=4.5307]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/ids/Documents/uni/AML/main.py", line 17, in <module>
+    main()
+    ~~~~^^
+  File "/home/ids/Documents/uni/AML/main.py", line 14, in main
+    classifier.trainModel()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/ids/Documents/uni/AML/chest_xray/models/xraymodelbaseclass.py", line 104, in trainModel
+    train_loss = self.modelTrainer.train_one_epoch(
+        epoch, 10, f"Fold {fold_idx+1}", train_loader
+    )
+  File "/home/ids/Documents/uni/AML/chest_xray/models/train.py", line 74, in train_one_epoch
+    running_loss += loss.item()
+                    ~~~~~~~~~^^
+KeyboardInterrupt
