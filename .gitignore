@@ -7,3 +7,5 @@ venv/
 data/images/
 data/bbox_images/
 data/author_pdfs/
+chest_xray/data/models/*.pth
+wandb/
