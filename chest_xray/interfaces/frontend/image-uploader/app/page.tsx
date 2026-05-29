@@ -8,8 +8,15 @@ export default function StartPage() {
 
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
+    console.log("Form submitted");
     const formData = new FormData(event.currentTarget);
-     uploadImage(formData);
+
+    try {
+      const result = await uploadImage(formData);
+      console.log("Upload result:", result);
+    } catch (error) {
+      console.error("Upload failed:", error);
+    }
   };
 
   return (
