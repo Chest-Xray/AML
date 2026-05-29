@@ -2,18 +2,14 @@ import numpy as np
 import pandas as pd
 import pickle
 import torch
-from collections.abc import Iterator
+from collections.abc import Iterator, Callable
 from torch.utils.data import DataLoader
 from torchvision.transforms import v2
 from os.path import abspath, dirname, exists, normpath, join
-from features.read_lists import get_data, get_train_val_data, get_test_data
-from features.dataset import XrayDataset
+from .read_lists import get_data, get_train_val_data, get_test_data
+from .dataset import XrayDataset
 from sklearn.model_selection import KFold
 
-BATCH_SIZE: int = 32    # play around with this on Habrok
-SEED: int = 42          # needs a more central location later
-NUM_WORKERS: int = 4    # play around with this on Habrok
-K_FOLDS: int = 4
 
 
 #  ▖▖  ▜         ▄▖      ▗ ▘
@@ -77,8 +73,15 @@ def get_normalization_stats(loader):
 #  ▌▌▀▌▜▘▀▌  ▌ ▛▌▀▌▛▌█▌▛▘
 #  ▙▘█▌▐▖█▌  ▙▖▙▌█▌▙▌▙▖▌
 
-class XrayLoader:
-    def __init__(self) -> None:
+class XrayCV:
+    """
+    Contains both train/val and test data
+    """
+    def __init__(self, batch_size, seed, num_workers, k_folds) -> None:
+        self.batch_size = batch_size
+        self.seed = seed
+        self.num_workers = num_workers
+        self.k_folds = k_folds
         self.data: pd.DataFrame = fetch_data()
         self.data["img_path"] = get_image_path() + "/" + self.data["img_name"]
         train_names: pd.Series = get_train_val_data()[0]
@@ -96,16 +99,15 @@ class XrayLoader:
 
     def fold_loaders(
         self,
-        k = K_FOLDS, 
-        batch_size = BATCH_SIZE,
         transform = None
     ) -> Iterator[tuple[DataLoader, DataLoader]]:
         """
         Do K-fold cross-validation
         Yield train data loader and val data loader for each fold
         """
-        kf: KFold = KFold(n_splits = k, shuffle = True, random_state = SEED)
+        kf: KFold = KFold(n_splits = self.k_folds, shuffle = True, random_state = self.seed)
         unique_patients: np.ndarray = self.train["patient_id"].unique()
+
         for train_idx, val_idx in kf.split(unique_patients):
             train_ids: np.ndarray = unique_patients[train_idx]
             val_ids: np.ndarray = unique_patients[val_idx]
@@ -128,17 +130,17 @@ class XrayLoader:
             yield (
                 DataLoader(
                     train,
-                    batch_size = batch_size,
+                    batch_size = self.batch_size,
                     shuffle = True,
-                    num_workers = NUM_WORKERS,
-                    pin_memory = True
+                    num_workers = self.num_workers,
+                    pin_memory=torch.cuda.is_available(),
                 ),
                 DataLoader(
                     val,
-                    batch_size = batch_size,
+                    batch_size = self.batch_size,
                     shuffle = False,
-                    num_workers = NUM_WORKERS,
-                    pin_memory = True
+                    num_workers = self.num_workers,
+                    pin_memory=torch.cuda.is_available(),
                 )
             )
 

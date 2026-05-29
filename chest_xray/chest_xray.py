@@ -1,6 +1,6 @@
 from features.dataset import XrayDataset
-from features.loader import (
-    XrayLoader,
+from chest_xray.features.cv import (
+    XrayCV,
     get_normalization_stats,
     BATCH_SIZE, SEED, NUM_WORKERS, K_FOLDS
 )
@@ -13,7 +13,7 @@ IMG_SIZE: int = 512
 
 def main():
     print("Loading dataset and transforms")
-    loader: XrayLoader = XrayLoader()
+    loader: XrayCV = XrayCV()
     base_transform = v2.Compose([
         v2.ToImage(),
         v2.Resize((IMG_SIZE, IMG_SIZE), antialias = True),
