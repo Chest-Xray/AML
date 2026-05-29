@@ -2,7 +2,7 @@
 
 ## How to use
 - cd into the /api folder 
-- run uvicorn api:app --reload
+- run: uvicorn api:app --reload
 ---
 
 ## Routes
