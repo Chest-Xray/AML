@@ -1,7 +1,0 @@
-pandas
-pillow
-matplotlib
-numpy
-sklearn
-torch
-wandb

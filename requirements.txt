@@ -2,10 +2,11 @@ pandas
 pillow
 matplotlib
 numpy
-sklearn
+scikit-learn
 torch
 wandb
 tqdm
 timm
 fastapi
 uvicorn
+python-multipart
