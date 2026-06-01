@@ -1,4 +1,3 @@
-````md
 # ChestXrays
 
 This API detects and classifies diseases from chest xray images and outputs a prediction with a label and a boundingbox
@@ -23,7 +22,7 @@ Clone the repository:
 ```bash
 git clone https://github.com/Chest-Xray/AML.git
 cd <your-project-folder>
-````
+
 
 Install dependencies:
 
