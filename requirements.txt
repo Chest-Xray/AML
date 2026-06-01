@@ -7,3 +7,6 @@ torch
 wandb
 tqdm
 timm
+fastapi
+uvicorn
+python-multipart
