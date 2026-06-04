@@ -108,8 +108,6 @@ class XrayClassifierBase(torch.nn.Module):
         for fold_idx, (train_loader, val_loader) in enumerate(
             self.modelTrainer.yield_dataloaders(transform)
         ):
-            if fold_idx >= 1:
-                continue
             print(f"\nFold {fold_idx + 1}/{K_FOLDS}")
     
             for epoch in range(NUM_EPOCHS):
@@ -127,19 +125,14 @@ class XrayClassifierBase(torch.nn.Module):
                 path: str = f"{MODEL_PATH}{self.type}_{"pretrained" if self.pretrained else "scratch"}_epoch{epoch}.pth"
                 torch.save(self.model, path)
                 print(f"model saved: {path}")
-                results_df, summary, confusion_matrices = self.evaluate()
+                results_df, summary, confusion_matrices = self.evaluate(val_loader)
                 self._log(train_loss, val_loss, results_df, summary, confusion_matrices, fold_idx, epoch)
 
 
     
-    def evaluate(self):
-        eval_loader = None
+    def evaluate(self, eval_loader):
         classes = [c for c in CLASSES]
         transform = self.modelTrainer.transform_images(self.modelTrainer.image_size)
-        for i, loaders in enumerate(self.modelTrainer.yield_dataloaders(transform)):
-            if i > 0:
-                continue
-            eval_loader = loaders[1]    # takes validation loader, so model only tests on data which it hasn't trained on
         results_df, summary, confusion_matrices = evaluate_model(
             self.model,
             eval_loader,
