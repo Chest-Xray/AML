@@ -84,7 +84,7 @@ class XrayClassifierBase(torch.nn.Module):
         logs_path: Path = Path(__file__).parent.parent.parent / "data" / "logs"
         log_name = f"{self.type}" if self.type == "vgg16" else f"{self.type}_{'pretrained' if self.pretrained else 'scratch'}"
         log_name = log_name + f"_lr_{self.lr}"
-        log_name = log_name + f"_fold_{fold_idx}"
+        log_name = log_name + f"_fold_{fold_idx}.txt"
         log_path = logs_path / log_name
         if not log_path.exists():
             with open(log_path, 'w') as file:
