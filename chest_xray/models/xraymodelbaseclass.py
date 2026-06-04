@@ -1,6 +1,5 @@
 import torch
 import torchvision.models as models
-import wandb
 from collections.abc import Callable, Iterable
 from timm.loss import AsymmetricLossMultiLabel
 from typing import Literal
@@ -86,20 +85,6 @@ class XrayClassifierBase(torch.nn.Module):
                 continue
             print(f"\nFold {fold_idx + 1}/{K_FOLDS}")
     
-            run = wandb.init(
-                project="chest_xray",
-                entity=f"chest_xray",
-                name=f"fold_{fold_idx+1}: {self.type}{str(self.pretrained) if self.type == 'densenet' else ''}",
-                config={
-                    "fold": fold_idx + 1,
-                    "epochs": 10,
-                    "batch_size": BATCH_SIZE,
-                    "lr": 1e-3,
-                    "model": self.type,
-                    "pretrained": self.pretrained
-                },
-            )
-    
             for epoch in range(NUM_EPOCHS):
                 train_loss = self.modelTrainer.train_one_epoch(
                     epoch, NUM_EPOCHS, f"Fold {fold_idx+1}", train_loader
@@ -108,13 +93,6 @@ class XrayClassifierBase(torch.nn.Module):
                     epoch, NUM_EPOCHS, f"Fold {fold_idx+1}", val_loader
                 )
     
-                # log to wandb
-                run.log({
-                    "epoch": epoch + 1,
-                    "train_loss": train_loss,
-                    "val_loss": val_loss,
-                })
-    
                 print(
                     f"Fold {fold_idx+1} Epoch {epoch+1}: "
                     f"Train {train_loss:.4f} | Val {val_loss:.4f}"
@@ -122,7 +100,6 @@ class XrayClassifierBase(torch.nn.Module):
                 path: str = f"{MODEL_PATH}{self.type}_{"pretrained" if self.pretrained else "scratch"}_epoch{epoch}.pth"
                 torch.save(self.model, path)
                 print(f"model saved: {path}")
-            run.finish()
             self.evaluate()
 
     
