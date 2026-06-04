@@ -9,12 +9,7 @@ from tqdm import tqdm
 from pathlib import Path
 from chest_xray.data.chestdataset import ChestXRayDataset
 from chest_xray.data.labels import CLASSES
-
-
-BATCH_SIZE: int = 4  # play around with this on Habrok
-SEED: int = 42
-NUM_WORKERS: int = 4    # play around with this on Habrok
-K_FOLDS: int = 4
+from chest_xray.tools.globals import *
 
 
 class ModelTrainer:

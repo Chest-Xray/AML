@@ -3,7 +3,7 @@ import torchvision.models as models
 from collections.abc import Callable, Iterable
 from timm.loss import AsymmetricLossMultiLabel
 from typing import Literal
-
+from pathlib import Path
 from chest_xray.models.train import ModelTrainer
 from chest_xray.data.labels import CLASSES
 from ..tools.globals import *
@@ -29,7 +29,7 @@ class XrayClassifierBase(torch.nn.Module):
         if self.model is None:
             self._build_model()
         self.optimizer = optimizer
-        self.optimizer = self.optimizer(self.model.parameters(), lr=0.001)
+        self.optimizer = self.optimizer(self.model.parameters(), lr=self.lr)
         self.criterion = criterion
         self.modelTrainer = ModelTrainer(self.model, self.criterion, self.optimizer, self.device)
 
@@ -49,7 +49,7 @@ class XrayClassifierBase(torch.nn.Module):
             self.model.classifier = torch.nn.Linear(self.model.classifier.in_features, len(CLASSES))
         elif self.type == "densenet201":
             if self.pretrained:
-                self.model = models.densenet161(weights=models.DenseNet201_Weights.DEFAULT)
+                self.model = models.densenet201(weights=models.DenseNet201_Weights.DEFAULT)
             else:
                 self.model = models.densenet201(weights=None)
             self.model.classifier = torch.nn.Linear(self.model.classifier.in_features, len(CLASSES))
@@ -80,10 +80,31 @@ class XrayClassifierBase(torch.nn.Module):
         self.model = self.model.to(self.device)
 
 
+    def _log(self, train_loss, val_loss, results_df, summary, confusion_matrices, fold_idx, epoch):
+        logs_path: Path = Path(__file__).parent.parent.parent / "data" / "logs"
+        log_name = f"{self.type}" if self.type == "vgg16" else f"{self.type}_{'pretrained' if self.pretrained else 'scratch'}"
+        log_name = log_name + f"_lr_{self.lr}"
+        log_name = log_name + f"_fold_{fold_idx}"
+        log_path = logs_path / log_name
+        if not log_path.exists():
+            with open(log_path, 'w') as file:
+                file.write("")
+        with open(log_path, "a") as file:
+            file.write(f"Epoch {epoch}:\n")
+            file.write(f"Train {train_loss:.4f} | Val {val_loss:.4f}\n")
+            file.write("Summary:\n")
+            for key, val in summary.items():
+                file.write(f"  {key}: {val}\n")
+            file.write("\ndataframe:\n")
+            file.write(results_df)
+            file.write("\n\nconfusion matrices:\n")
+            file.write(confusion_matrices)
+            file.write("\n\n\n")
+
 
     def trainModel(self):
         transform = self.modelTrainer.transform_images(self.modelTrainer.image_size)
-    
+
         for fold_idx, (train_loader, val_loader) in enumerate(
             self.modelTrainer.yield_dataloaders(transform)
         ):
@@ -106,7 +127,9 @@ class XrayClassifierBase(torch.nn.Module):
                 path: str = f"{MODEL_PATH}{self.type}_{"pretrained" if self.pretrained else "scratch"}_epoch{epoch}.pth"
                 torch.save(self.model, path)
                 print(f"model saved: {path}")
-            self.evaluate()
+                results_df, summary, confusion_matrices = self.evaluate()
+                self._log(train_loss, val_loss, results_df, summary, confusion_matrices, fold_idx, epoch)
+
 
     
     def evaluate(self):
@@ -130,3 +153,5 @@ class XrayClassifierBase(torch.nn.Module):
         print(results_df)
         print("\n\nconfusion matrices:")
         print(confusion_matrices)
+        return results_df, summary, confusion_matrices
+

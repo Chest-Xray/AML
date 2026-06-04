@@ -1,3 +1,5 @@
+from pathlib import Path
+
 BATCH_SIZE: int = 4    # play around with this on Habrok
 SEED: int = 42
 NUM_WORKERS: int = 4    # play around with this on Habrok
