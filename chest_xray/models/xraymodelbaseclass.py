@@ -13,7 +13,7 @@ from ..features.evaluation import evaluate_model
 class XrayClassifierBase(torch.nn.Module):
     def __init__(
             self,
-            type: Literal["vgg16", "densenet"] = "vgg16",
+            type: Literal["vgg16", "densenet161", "densenet201"] = "vgg16",
             criterion: Callable[[tuple[torch.Tensor, torch.Tensor]],float] = AsymmetricLossMultiLabel(gamma_neg=4, gamma_pos=0, clip=0.05),
             pretrained: bool = True,
             optimizer = torch.optim.Adam,
@@ -41,11 +41,17 @@ class XrayClassifierBase(torch.nn.Module):
                 self.model.classifier[6].in_features,
                 len(CLASSES)
             )
-        elif self.type == "densenet":
+        elif self.type == "densenet161":
             if self.pretrained:
                 self.model = models.densenet161(weights=models.DenseNet161_Weights.DEFAULT)
             else:
                 self.model = models.densenet161(weights=None)
+            self.model.classifier = torch.nn.Linear(self.model.classifier.in_features, len(CLASSES))
+        elif self.type == "densenet201":
+            if self.pretrained:
+                self.model = models.densenet161(weights=models.DenseNet201_Weights.DEFAULT)
+            else:
+                self.model = models.densenet201(weights=None)
             self.model.classifier = torch.nn.Linear(self.model.classifier.in_features, len(CLASSES))
         else:
             raise ValueError("Please select a model type.")
