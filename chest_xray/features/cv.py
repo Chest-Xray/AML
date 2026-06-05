@@ -133,7 +133,6 @@ class XrayCV:
         self.diseases: list[str] = sorted(
             self.data["diseases"].str.split("|").explode().unique()
         )
-        bbox_data: pd.DataFrame = get_bbox_data()
 
 
 
@@ -183,7 +182,3 @@ class XrayCV:
                     pin_memory=torch.cuda.is_available(),
                 )
             )
-
-if __name__ =="__main__":
-    print(fetch_data())
-    print(get_bbox_data())
