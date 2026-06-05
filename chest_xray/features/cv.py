@@ -120,7 +120,7 @@ class XrayCV:
         self.seed = seed
         self.num_workers = num_workers
         self.k_folds = k_folds
-        self.data: pd.DataFrame = fetch_data()
+        self.data: pd.DataFrame = make_dataframe()
         self.data["img_path"] = get_image_path() + "/" + self.data["img_name"]
         train_names: pd.Series = get_train_val_data()[0]
         test_names: pd.Series = get_test_data()[0]
