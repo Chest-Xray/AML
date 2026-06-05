@@ -18,7 +18,8 @@ class XrayClassifierBase(torch.nn.Module):
             pretrained: bool = True,
             optimizer = torch.optim.Adam,
             lr: float = 0.001,
-            model: torch.nn.module | None = None
+            # model: torch.nn.module | None = None
+            model = None
             ) -> None:
         super().__init__()
         self.type = type
@@ -122,11 +123,11 @@ class XrayClassifierBase(torch.nn.Module):
                     f"Fold {fold_idx+1} Epoch {epoch+1}: "
                     f"Train {train_loss:.4f} | Val {val_loss:.4f}"
                 )
-                path: str = f"{MODEL_PATH}{self.type}_{"pretrained" if self.pretrained else "scratch"}_epoch{epoch}.pth"
+                path: str = f"{MODEL_PATH}{self.type}_{'pretrained' if self.pretrained else 'scratch'}_epoch{epoch}.pth"
                 torch.save(self.model, path)
                 print(f"model saved: {path}")
                 results_df, summary, confusion_matrices = self.evaluate(val_loader)
-                self._log(train_loss, val_loss, results_df, summary, confusion_matrices, fold_idx, epoch)
+                self._log(train_loss, val_loss, results_df, summary, confusion_matrices, fold_idx + 1, epoch)
 
 
     

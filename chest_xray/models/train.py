@@ -1,6 +1,5 @@
 import pandas as pd
 import torch
-import wandb
 from ..features.cv import XrayCV
 from collections.abc import Iterator
 from torch.utils.data import DataLoader
