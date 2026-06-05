@@ -2,10 +2,9 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 import torch
-from torchvision import models, transforms
 import io
-
 from load_model import get_model, CLASSES
+import base64
 
 app = FastAPI()
 
@@ -45,8 +44,13 @@ async def create_prediction(file: UploadFile = File(...)):
     predictions = sorted(
         all_predictions, key=lambda item: item["confidence"], reverse=True
     )
+    
+    # to send it back, convert image bytes to base64
+    buffer = io.BytesIO(image_bytes)
+    image_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
     return {
         "filename": file.filename,
         "predictions": predictions,
+        "image": image_base64
     }
