@@ -11,3 +11,4 @@ data/author_pdfs/
 node_modules
 chest_xray/data/models/*.pth
 wandb/
+.pth
