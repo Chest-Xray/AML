@@ -1,17 +1,17 @@
 CLASSES = (
     "Hernia",
-    "Pneumonia",
+    "Pneumonia",            #
     "Fibrosis",
-    "Effusion",
+    "Effusion",             #
     "Edema",
     "Emphysema",
-    "Mass",
-    "Nodule",
-    "Atelectasis",
-    "Cardiomegaly",
-    "Infiltration",
-    "Pleural_Thickening",
+    "Mass",                 #
+    "Nodule",               #
+    "Atelectasis",          #
+    "Cardiomegaly",         #
+    "Infiltration",         #
+    "Pleural_Thickening",  
     "Consolidation",
-    "Pneumothorax",
+    "Pneumothorax",         #
     "No Finding",
 )
