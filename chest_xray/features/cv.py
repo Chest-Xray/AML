@@ -182,3 +182,6 @@ class XrayCV:
                     pin_memory=torch.cuda.is_available(),
                 )
             )
+
+if __name__ == "__main__":
+    print(make_dataframe().columns)
