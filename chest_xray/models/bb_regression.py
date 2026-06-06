@@ -1,3 +1,4 @@
+import sys
 import os
 
 import torch
@@ -26,12 +27,13 @@ class BoundingBoxRegression:
             self.classifier XrayClassifierBase("densenet201", pretrained=False, model=load(path, map_location = torch.device('cpu'), weights_only=False))
         if "vgg16" in path:
             self.classifier XrayClassifierBase("vgg16", model=load(path, map_location = torch.device('cpu'), weights_only=False))
+        self._adjust_output()
 
 
-    def adjust_output(self, model):
+    def _adjust_output(self):
         """Adjust the output of the classifier to predict 75 classes (15 classes, 5 features per class)"""
-        self.classifier.model.classifier = torch.nn.Linear(model.model.classifier.in_features, len(CLASSES)*5)
-        model = self.classifier.model.to(self.classifier.model.device)
+        self.classifier.model.classifier = torch.nn.Linear(self.classifier.model.classifier.in_features, len(CLASSES)*5)
+        self.classifier.model = self.classifier.model.to(self.classifier.model.device)
 
 
     def trainModel(self):
@@ -95,35 +97,10 @@ class BoundingBoxRegression:
         print(confusion_matrices)
         return results_df, summary, confusion_matrices
 
-
-        """
-        4 denseblocks
-
-        block 1 
-        - 6 layers
-            transition
-        block 2
-        - 12 layers
-            transition
-        block 3
-        - 36 layers
-            transition
-        block 4
-        - 24 layers
-        """
-        # # Freeze every parameter:
-        # for param in self.model.parameters():
-        #     param.requires_grad = False
-
-        # # unfreeze layer by layer
-        # for layer in range(NUM_EPOCHS):
-
-
-def main(model_name):
+def main():
     """Instantiate a BoundingBoxRegressionModel from an XrayClassifier model"""
-    model = build_model(model_name)
-    adjust_output(model)
-    trainModel(model)
+    model = BoundingBoxRegression(sys.argv[1])
+    model.trainModel()
 
 
 if __name__ == "__main__":
