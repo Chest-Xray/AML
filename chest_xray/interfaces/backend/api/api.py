@@ -1,5 +1,6 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from pathlib import Path
 from PIL import Image
 import torch
 from torchvision import models, transforms
