@@ -37,7 +37,7 @@ app.add_middleware(
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-MODEL_PATH = Path(__file__).parent.parent.parent.parent / "data" / "models" / "densenet_pretrained_epoch10.pth"
+MODEL_PATH = Path(__file__).parent.parent.parent / "data" / "models" / "densenet_pretrained_epoch10.pth"
 
 
 def create_model():
