@@ -199,7 +199,7 @@ class XrayBboxBase(XrayClassifierBase):
     
 
     def evaluate(self, eval_loader):
-        results_df, summary, confusion_matrices = evaluate_bbox(
+        results_df, summary, confusion_matrices, bbox_summary = evaluate_bbox(
             self.model,
             eval_loader,
             self.device,
@@ -212,7 +212,9 @@ class XrayBboxBase(XrayClassifierBase):
         print(results_df)
         print("\nConfusion matrices:")
         print(confusion_matrices)
-        return results_df, summary, confusion_matrices
+        print("\nbbox summary")
+        print(bbox_summary)
+        return results_df, summary, confusion_matrices, bbox_summary
 
 if __name__ == "__main__":
     path = MODEL_PATH / "densenet_pretrained_epoch10.pth"
