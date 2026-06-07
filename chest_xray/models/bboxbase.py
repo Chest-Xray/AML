@@ -189,14 +189,31 @@ class XrayBboxBase(XrayClassifierBase):
                 torch.save(self.model, path)
                 print(f"Model saved: {path}")
 
-                results_df, summary, confusion_matrices = self.evaluate(val_loader)
-                self._log(
-                    train_loss_total, val_loss_total,
-                    results_df, summary, confusion_matrices,
-                    fold_idx + 1, epoch,
-                )
+                results_df, summary, confusion_matrices, bbox_summary = self.evaluate(val_loader)
 
     
+
+    def trainModel_no_cv(self, train_loader, val_loader, num_epochs) -> None:
+        transform = self.modelTrainer.transform_images(self.modelTrainer.image_size)
+
+        path = ''
+        for epoch in range(NUM_EPOCHS):
+            train_loss_total, train_loss_classification, train_loss_bbox = self._run_epoch(train_loader, train=True, epoch=epoch+1)
+            val_loss_total, val_loss_classification, val_loss_bbox = self._run_epoch(val_loader,   train=False, epoch=epoch+1)
+                
+            print(
+                f"Epoch {epoch+1}: "
+                f"Train loss {train_loss_total:.4f} (classification {train_loss_classification:.4f}, bbox {train_loss_bbox:.4f})"
+                f"Val loss {val_loss_total:.4f} (classification {val_loss_classification:.4f}, bbox {val_loss_bbox:.4f})"
+            )
+            path = (
+                f"{MODEL_PATH}{self.type}_bbox_"
+                f"{'pretrained' if self.pretrained else 'scratch'}_epoch{epoch}.pth"
+            )
+            torch.save(self.model, path)
+            print(f"Model saved: {path}")
+        return path
+
 
     def evaluate(self, eval_loader):
         results_df, summary, confusion_matrices, bbox_summary = evaluate_bbox(
@@ -218,6 +235,6 @@ class XrayBboxBase(XrayClassifierBase):
 
 if __name__ == "__main__":
     path = MODEL_PATH / "densenet_pretrained_epoch10.pth"
-    bbox = XrayBboxBase("densenet161", model=load(path, map_location = torch.device('cpu'), weights_only=False))
+    bbox = XrayBboxBase("densenet161", model=load(path, weights_only=False))
     bbox.trainModel()
     
