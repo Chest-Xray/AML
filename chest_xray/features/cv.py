@@ -182,3 +182,23 @@ class XrayCV:
                     pin_memory=torch.cuda.is_available(),
                 )
             )
+
+
+    def test_loaders(self, transform = None) -> tuple[XrayDataset, XrayDataset]:
+        train_set = XrayDataset(self.train, transform = transform, diseases=self.diseases)
+        test_set = XrayDataset(self.test, transform=None, diseases=self.diseases)
+        train_loader = DataLoader(
+            train_set,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+            pin_memory=torch.cuda.is_available()
+        )
+        test_loader = DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+            pin_memory=torch.cuda.is_available()
+        )
+        return train_loader, test_loader
