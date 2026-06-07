@@ -6,7 +6,7 @@ from collections.abc import Iterator, Callable
 from torch.utils.data import DataLoader
 from torchvision.transforms import v2
 from os.path import abspath, dirname, exists, normpath, join
-from .read_lists import get_data, get_train_val_data, get_test_data
+from .read_lists import get_data, get_train_val_data, get_test_data, get_bbox_data
 from .dataset import XrayDataset
 from sklearn.model_selection import KFold
 
@@ -30,6 +30,44 @@ def fetch_data() -> pd.DataFrame:
     diseases (split by '|'), and patient ID
     """
     return get_data()[["img_name", "diseases", "patient_id"]]
+
+
+def make_dataframe() -> pd.DataFrame:
+    """
+    Merge the classification data with the bounding box data into a single dataframe
+    """
+    classification_data = fetch_data()
+    bbox_data = get_bbox_data()
+
+    try:
+        bbox_pivot = bbox_data.pivot(index='img_name', columns='disease', values=['x', 'y', 'w', 'h'])
+    except Exception as e:
+        bbox_pivot = bbox_data.pivot_table(index='img_name', columns='disease', values=['x', 'y', 'w', 'h'], aggfunc='first')
+    
+    bbox_pivot.columns = [f"{metric}_{disease.lower()}" for metric, disease in bbox_pivot.columns]
+    bbox_pivot = bbox_pivot.reset_index()
+    
+    all_data = pd.merge(classification_data, bbox_pivot, on='img_name', how='left')
+    # some diseases don't have any bounding box associated with them, to keep everything uniform, we'll add them anyways
+    extra_classes = ['hernia', 'fibrosis', 'edema', 'emphysema', 'pleural_thickening', 'consolitation', 'no finding']
+    
+    bbox_diseases = [d.lower() for d in bbox_data['disease'].unique()]
+    all_diseases = sorted(list(set(bbox_diseases + extra_classes)))
+    
+    bbox_cols = []
+    for disease in all_diseases:
+        for metric in ['x', 'y', 'w', 'h']:
+            bbox_cols.append(f"{metric}_{disease}")
+    
+    # Create columns for diseases without bounding boxes
+    for col in bbox_cols:
+        if col not in all_data.columns:
+            all_data[col] = 0.0
+    
+    all_data[bbox_cols] = all_data[bbox_cols].fillna(0.0)
+    final_cols = ['img_name', 'diseases', 'patient_id'] + bbox_cols
+    all_data = all_data[final_cols]
+    return all_data
 
 
 def calculate_stats(loader):
@@ -82,7 +120,7 @@ class XrayCV:
         self.seed = seed
         self.num_workers = num_workers
         self.k_folds = k_folds
-        self.data: pd.DataFrame = fetch_data()
+        self.data: pd.DataFrame = make_dataframe()
         self.data["img_path"] = get_image_path() + "/" + self.data["img_name"]
         train_names: pd.Series = get_train_val_data()[0]
         test_names: pd.Series = get_test_data()[0]
@@ -95,6 +133,7 @@ class XrayCV:
         self.diseases: list[str] = sorted(
             self.data["diseases"].str.split("|").explode().unique()
         )
+
 
 
     def fold_loaders(
@@ -143,4 +182,3 @@ class XrayCV:
                     pin_memory=torch.cuda.is_available(),
                 )
             )
-
