@@ -133,6 +133,8 @@ def evaluate_model(
 
     return results_df, summary, confusion_matrices
 
+
+
 def evaluate_bbox(
     model: nn.Module,
     dataloader: DataLoader,

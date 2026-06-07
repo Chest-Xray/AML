@@ -6,7 +6,7 @@ from typing import Literal
 from chest_xray.data.labels import CLASSES
 from tqdm import tqdm
 from ..tools.globals import *
-from ..features.evaluation import evaluate_model
+from ..features.evaluation import evaluate_bbox
 from .xraymodelbaseclass import XrayClassifierBase
 from .train import ModelTrainer
 from torch import load
@@ -199,7 +199,7 @@ class XrayBboxBase(XrayClassifierBase):
     
 
     def evaluate(self, eval_loader):
-        results_df, summary, confusion_matrices = evaluate_model(
+        results_df, summary, confusion_matrices = evaluate_bbox(
             self.model,
             eval_loader,
             self.device,
