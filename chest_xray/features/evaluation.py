@@ -177,3 +177,56 @@ def evaluate_bbox(
         list(CLASSES)
     )
 
+    def xywh_to_xyxy(boxes: torch.Tensor) -> torch.Tensor:
+        x, y, w, h = boxes[..., 0], boxes[..., 1], boxes[..., 2], boxes[..., 3]
+        return torch.stack([x, y, x + w, y + h], dim=-1)
+
+    def paired_iou(pred_boxes: torch.Tensor, gt_boxes: torch.Tensor) -> torch.Tensor:
+        """IoU between pred[i] and gt[i] for each i. Input shape: (K, 4) xyxy."""
+        inter_x1 = torch.max(pred_boxes[:, 0], gt_boxes[:, 0])
+        inter_y1 = torch.max(pred_boxes[:, 1], gt_boxes[:, 1])
+        inter_x2 = torch.min(pred_boxes[:, 2], gt_boxes[:, 2])
+        inter_y2 = torch.min(pred_boxes[:, 3], gt_boxes[:, 3])
+        inter = (inter_x2 - inter_x1).clamp(0) * (inter_y2 - inter_y1).clamp(0)
+        area_pred = (pred_boxes[:, 2] - pred_boxes[:, 0]) * (pred_boxes[:, 3] - pred_boxes[:, 1])
+        area_gt   = (gt_boxes[:, 2]   - gt_boxes[:, 0])   * (gt_boxes[:, 3]   - gt_boxes[:, 1])
+        return inter / (area_pred + area_gt - inter).clamp(min=1e-6)
+
+    iou_per_disease: Dict[str, List[float]] = {label: [] for label in disease_labels}
+
+    model.eval()
+    with torch.no_grad():
+        for images, classification_target, bbox_target in dataloader:
+            images = images.to(device)
+            classification_target = classification_target.to(device)
+            bbox_target = bbox_target.to(device)
+
+            _, bbox_pred = model(images)
+
+            # We only evaluate if the disease is present and a bbox was annotated
+            disease_present = classification_target.bool()
+            bbox_annotated = (bbox_target[..., 2] > 0) & (bbox_target[..., 3] > 0)
+            valid_mask = disease_present & bbox_annotated
+
+            for c, label in enumerate(disease_labels):
+                sample_mask = valid_mask[:, c]
+                if not sample_mask.any():
+                    continue
+                pred_xyxy = xywh_to_xyxy(bbox_pred[sample_mask, c])
+                gt_xyxy   = xywh_to_xyxy(bbox_target[sample_mask, c,])
+                iou_per_disease[label].extend(paired_iou(pred_xyxy, gt_xyxy).cpu().tolist())
+
+    bbox_summary: Dict[str, Any] = {}
+    per_disease_ious = []
+    for label in disease_labels:
+        scores = iou_per_disease[label]
+        if scores:
+            mean_iou = float(sum(scores) / len(scores))
+            bbox_summary[label] = {"mean_iou": mean_iou, "n_samples": len(scores)}
+            per_disease_ious.append(mean_iou)
+        else:
+            bbox_summary[label] = {"mean_iou": float("nan"), "n_samples": 0}
+
+    bbox_summary["mIoU"] = float(sum(per_disease_ious) / len(per_disease_ious)) if per_disease_ious else float("nan")
+
+    return classification_results, classification_summary, confusion_matrices, bbox_summary
