@@ -30,7 +30,7 @@ class XrayClassifierBase(torch.nn.Module):
         if self.model is None:
             self._build_model()
         self.optimizer = optimizer
-        self.optimizer = self.optimizer(self.model.parameters(), lr=self.lr)
+        self.optimizer = self.optimizer(filter(lambda parameter: parameter.requires_grad, self.model.parameters()), lr=self.lr)
         self.criterion = criterion
         self.modelTrainer = ModelTrainer(self.model, self.criterion, self.optimizer, self.device)
 
