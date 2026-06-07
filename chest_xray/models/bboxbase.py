@@ -114,16 +114,16 @@ class XrayBboxBase(XrayClassifierBase):
                 pred_xyxy, tgt_xyxy, reduction="mean"
             )
         else:
-            n_disease  = disease_present.sum().item()
-            n_bbox     = bbox_annotated.sum().item()
-            n_valid    = valid_mask.sum().item()
-            print(
-                f"[bbox_loss=0] disease_present={n_disease} | "
-                f"bbox_annotated={n_bbox} | "
-                f"valid={n_valid}"
-            )
-            print(f"  classification_target sample: {classification_target[0]}")
-            print(f"  bbox_target sample w/h:       {bbox_target[0, :, 2:4]}")
+            # n_disease  = disease_present.sum().item()
+            # n_bbox     = bbox_annotated.sum().item()
+            # n_valid    = valid_mask.sum().item()
+            # print(
+            #     f"[bbox_loss=0] disease_present={n_disease} | "
+            #     f"bbox_annotated={n_bbox} | "
+            #     f"valid={n_valid}"
+            # )
+            # print(f"  classification_target sample: {classification_target[0]}")
+            # print(f"  bbox_target sample w/h:       {bbox_target[0, :, 2:4]}")
             bbox_loss = torch.tensor(0.0, device=self.device)
 
         total_loss = classification_loss + self.bbox_loss_weight * bbox_loss
