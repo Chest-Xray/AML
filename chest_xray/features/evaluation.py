@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from torch import nn
 from torch.utils.data import DataLoader
+from chest_xray.data.labels import CLASSES
 
 from sklearn.metrics import (
     roc_auc_score,
@@ -131,3 +132,48 @@ def evaluate_model(
     }
 
     return results_df, summary, confusion_matrices
+
+def evaluate_bbox(
+    model: nn.Module,
+    dataloader: DataLoader,
+    device: torch.device,
+    disease_labels: List[str],
+    threshold: float = 0.5,
+) -> Tuple[pd.DataFrame, Dict[str, float], Dict[str, Dict[str, Any]]]:
+    class NoBboxLoader:
+        """
+        Removes bboxes from the dataloader for classification evaluation
+        """
+        def __init__(self, loader):
+            self.loader = loader
+        
+        def __iter__(self):
+            for images, classification_target, _ in self.loader:
+                yield images, classification_target
+
+        def __len__(self) -> int:
+            return len(self.loader)
+        
+        @property
+        def dataset(self):
+            return self.loader.dataset
+    
+    class NoBboxModel(torch.nn.Module):
+        """
+        Remove bbox predictions for classification evaluation
+        """
+        def __init__(self, bbox_model: torch.nn.Module):
+            super().__init__()
+            self.bbox_model = bbox_model
+        
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            classification_pred, _ = self.bbox_model(x)
+            return classification_pred
+        
+    classification_results, classification_summary, confusion_matrices = evaluate_model(
+        NoBboxModel(model),
+        NoBboxLoader(dataloader),
+        device,
+        list(CLASSES)
+    )
+
