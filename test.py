@@ -4,14 +4,14 @@ from torch import load
 from pathlib import Path
 import pickle
 
-CLASSIFIER_EPOCHS = 1
-REGRESSOR_EPOCHS = 1
+CLASSIFIER_EPOCHS = 7
+REGRESSOR_EPOCHS = 25
 
 def main():
     # train classifier
     classifier = XrayClassifierBase(type='densenet201', pretrained=True)
     transform = classifier.modelTrainer.transform_images(classifier.modelTrainer.image_size)
-    test_loader, train_loader = classifier.modelTrainer.cv.test_loaders(transform)
+    train_loader, test_loader = classifier.modelTrainer.cv.test_loaders(transform)
     path = classifier.trainModel_no_cv(train_loader, test_loader, CLASSIFIER_EPOCHS)
     
     # train regressor
@@ -26,18 +26,6 @@ def main():
     pickle.dump(confusion_matrices, open(pickle_path / "confusion_matrices.pkl", "wb"))
     pickle.dump(bbox_summary, open(pickle_path / "bbox_summary.pkl", "wb"))
 
-
-# if __name__ == "__main__":
-#     classifier = XrayClassifierBase(type='densenet201', pretrained=True)
-#     df = classifier.modelTrainer.cv.test
-#     bbox_cols_w = [c for c in df.columns if c.startswith("w_")]
-#     has_bbox = (df[bbox_cols_w] > 0).any(axis=1)
-#     print(f"Rows with bbox: {has_bbox.sum()} / {len(df)}")
-#     for col in bbox_cols_w:
-#         disease = col[2:]  # strip "w_"
-#         n = (df[col] > 0).sum()
-#         print(f"  {disease}: {n} annotated boxes")
-#     #print(df)
 
 if __name__ == "__main__":
     main()
