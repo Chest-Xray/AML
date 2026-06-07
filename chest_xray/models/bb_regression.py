@@ -20,13 +20,13 @@ class BoundingBoxRegression:
         if "densenet161" in path and "pretrained" in path:
             self.classifier = XrayClassifierBase("densenet161", pretrained=True, model=load(path, map_location = torch.device('cpu'), weights_only=False))
         if "densenet161" in path and "scratch" in path:
-            self.classifier XrayClassifierBase("densenet161", pretrained=False, model=load(path, map_location = torch.device('cpu'), weights_only=False))
+            self.classifier = XrayClassifierBase("densenet161", pretrained=False, model=load(path, map_location = torch.device('cpu'), weights_only=False))
         if "densenet201" in path and "pretrained" in path:
-            self.classifier XrayClassifierBase("densenet201", pretrained=True, model=load(path, map_location = torch.device('cpu'), weights_only=False))
+            self.classifier = XrayClassifierBase("densenet201", pretrained=True, model=load(path, map_location = torch.device('cpu'), weights_only=False))
         if "densenet201" in path and "scratch" in path:
-            self.classifier XrayClassifierBase("densenet201", pretrained=False, model=load(path, map_location = torch.device('cpu'), weights_only=False))
+            self.classifier = XrayClassifierBase("densenet201", pretrained=False, model=load(path, map_location = torch.device('cpu'), weights_only=False))
         if "vgg16" in path:
-            self.classifier XrayClassifierBase("vgg16", model=load(path, map_location = torch.device('cpu'), weights_only=False))
+            self.classifier = XrayClassifierBase("vgg16", model=load(path, map_location = torch.device('cpu'), weights_only=False))
         self._adjust_output()
 
 

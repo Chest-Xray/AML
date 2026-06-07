@@ -9,6 +9,7 @@ from os.path import abspath, dirname, exists, normpath, join
 from .read_lists import get_data, get_train_val_data, get_test_data, get_bbox_data
 from .dataset import XrayDataset
 from sklearn.model_selection import KFold
+from chest_xray.tools.globals import SEED
 
 
 
@@ -70,6 +71,33 @@ def make_dataframe() -> pd.DataFrame:
     return all_data
 
 
+def split_bbox():
+    data: pd.DataFrame = make_dataframe()
+    train: pd.DataFrame = data[
+        data["img_name"].isin(get_train_val_data()[0])
+    ].copy()
+    test: pd.DataFrame = data[
+        data["img_name"].isin(get_test_data()[0])
+    ].copy()
+    bbox_patients = data[
+        data["img_name"].isin(get_bbox_data()["img_name"])
+    ]["patient_id"].unique()
+
+    rng = np.random.default_rng(SEED)
+    bbox_patients = rng.permutation(bbox_patients)
+    split = int(len(bbox_patients) * 0.8)
+    train_bbox_patients = set(bbox_patients[:split])
+    bbox_rows = test[
+        test["patient_id"].isin(train_bbox_patients)
+    ]
+    train = pd.concat([train, bbox_rows])
+    test = test[~test["patient_id"].isin(train_bbox_patients)]
+
+    return train, test
+    
+
+
+
 def calculate_stats(loader):
     """
     Calculate mean and standard deviation on images
@@ -122,14 +150,7 @@ class XrayCV:
         self.k_folds = k_folds
         self.data: pd.DataFrame = make_dataframe()
         self.data["img_path"] = get_image_path() + "/" + self.data["img_name"]
-        train_names: pd.Series = get_train_val_data()[0]
-        test_names: pd.Series = get_test_data()[0]
-        self.train: pd.DataFrame = self.data[
-            self.data["img_name"].isin(train_names)
-        ].copy()
-        self.test: pd.DataFrame = self.data[
-            self.data["img_name"].isin(test_names)
-        ].copy()
+        self.train, self.test = split_bbox()
         self.diseases: list[str] = sorted(
             self.data["diseases"].str.split("|").explode().unique()
         )
@@ -182,3 +203,28 @@ class XrayCV:
                     pin_memory=torch.cuda.is_available(),
                 )
             )
+
+
+    def test_loaders(self, transform = None) -> tuple[XrayDataset, XrayDataset]:
+        train_set = XrayDataset(self.train, transform = transform, diseases=self.diseases)
+        test_set = XrayDataset(self.test, transform=None, diseases=self.diseases)
+        train_loader = DataLoader(
+            train_set,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+            pin_memory=torch.cuda.is_available()
+        )
+        test_loader = DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+            pin_memory=torch.cuda.is_available()
+        )
+        return train_loader, test_loader
+
+
+
+if __name__ == "__main__":
+    split_bbox()
