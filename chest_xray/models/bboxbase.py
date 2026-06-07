@@ -107,12 +107,23 @@ class XrayBboxBase(XrayClassifierBase):
         valid_mask      = disease_present & bbox_annotated
 
         if valid_mask.any():
+            print("VALID MASK FOUND")
             pred_xyxy = self._xywh_to_xyxy(bbox_pred[valid_mask])
             tgt_xyxy  = self._xywh_to_xyxy(bbox_target[valid_mask])
             bbox_loss = ops.generalized_box_iou_loss(
                 pred_xyxy, tgt_xyxy, reduction="mean"
             )
         else:
+            n_disease  = disease_present.sum().item()
+            n_bbox     = bbox_annotated.sum().item()
+            n_valid    = valid_mask.sum().item()
+            print(
+                f"[bbox_loss=0] disease_present={n_disease} | "
+                f"bbox_annotated={n_bbox} | "
+                f"valid={n_valid}"
+            )
+            print(f"  classification_target sample: {classification_target[0]}")
+            print(f"  bbox_target sample w/h:       {bbox_target[0, :, 2:4]}")
             bbox_loss = torch.tensor(0.0, device=self.device)
 
         total_loss = classification_loss + self.bbox_loss_weight * bbox_loss
@@ -193,14 +204,19 @@ class XrayBboxBase(XrayClassifierBase):
 
     
 
-    def trainModel_no_cv(self, train_loader, val_loader, num_epochs) -> None:
+    def trainModel_no_cv(self, train_loader, val_loader, max_epochs) -> None:
         transform = self.modelTrainer.transform_images(self.modelTrainer.image_size)
 
         path = ''
-        for epoch in range(NUM_EPOCHS):
+        train_losses = []
+        val_losses = []
+        paths = []
+        early_stop: bool = False
+        for epoch in range(max_epochs):
             train_loss_total, train_loss_classification, train_loss_bbox = self._run_epoch(train_loader, train=True, epoch=epoch+1)
             val_loss_total, val_loss_classification, val_loss_bbox = self._run_epoch(val_loader,   train=False, epoch=epoch+1)
-                
+            train_losses.append(train_loss_total)
+            val_losses.append(val_loss_total)
             print(
                 f"Epoch {epoch+1}: "
                 f"Train loss {train_loss_total:.4f} (classification {train_loss_classification:.4f}, bbox {train_loss_bbox:.4f})"
@@ -210,9 +226,20 @@ class XrayBboxBase(XrayClassifierBase):
                 f"{MODEL_PATH}{self.type}_bbox_"
                 f"{'pretrained' if self.pretrained else 'scratch'}_epoch{epoch}.pth"
             )
+            paths.append(path)
             torch.save(self.model, path)
             print(f"Model saved: {path}")
-        return path
+            if len(train_losses) > 2:
+                if train_losses[-1] > train_losses[-2] and train_losses[-2] > train_losses[-3]:
+                    early_stop = True
+                    break
+                if val_losses[-1] > val_losses[-2] and val_losses[-2] > val_losses[-3]:
+                    early_stop = True
+                    break
+        if early_stop:
+            return paths[-3]
+        else:
+            return path
 
 
     def evaluate(self, eval_loader):

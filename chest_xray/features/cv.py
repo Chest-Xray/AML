@@ -202,3 +202,19 @@ class XrayCV:
             pin_memory=torch.cuda.is_available()
         )
         return train_loader, test_loader
+
+
+
+if __name__ == "__main__":
+    df = make_dataframe()
+
+    bbox_cols_w = [c for c in df.columns if c.startswith("w_")]
+    has_bbox = (df[bbox_cols_w] > 0).any(axis=1)
+    print(f"Rows with bbox: {has_bbox.sum()} / {len(df)}")
+
+    for col in bbox_cols_w:
+        disease = col[2:]  # strip "w_"
+        n = (df[col] > 0).sum()
+        print(f"  {disease}: {n} annotated boxes")
+    
+    print(df)
