@@ -10,5 +10,6 @@ data/author_pdfs/
 .next
 node_modules
 chest_xray/data/models/*.pth
+chest_xray/interfaces/backend/api/densenet_pretrained_epoch10.pth
 wandb/
 .pth
