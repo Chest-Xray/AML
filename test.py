@@ -4,14 +4,15 @@ from torch import load
 from pathlib import Path
 import pickle
 
-CLASSIFIER_EPOCHS = 7
-REGRESSOR_EPOCHS = 25
+CLASSIFIER_EPOCHS = 1
+REGRESSOR_EPOCHS = 1
 
 def main():
     # train classifier
     classifier = XrayClassifierBase(type='densenet201', pretrained=True)
     transform = classifier.modelTrainer.transform_images(classifier.modelTrainer.image_size)
     train_loader, test_loader = classifier.modelTrainer.cv.test_loaders(transform)
+
     path = classifier.trainModel_no_cv(train_loader, test_loader, CLASSIFIER_EPOCHS)
     
     # train regressor

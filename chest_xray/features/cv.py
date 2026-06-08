@@ -37,7 +37,6 @@ def make_dataframe() -> pd.DataFrame:
     """
     Merge the classification data with the bounding box data into a single dataframe
     """
-    classification_data = fetch_data()
     bbox_data = get_bbox_data()
 
     try:
@@ -47,7 +46,7 @@ def make_dataframe() -> pd.DataFrame:
     
     bbox_pivot.columns = [f"{metric}_{disease.lower()}" for metric, disease in bbox_pivot.columns]
     bbox_pivot = bbox_pivot.reset_index()
-    
+    classification_data = fetch_data()    
     all_data = pd.merge(classification_data, bbox_pivot, on='img_name', how='left')
     # some diseases don't have any bounding box associated with them, to keep everything uniform, we'll add them anyways
     extra_classes = ['hernia', 'fibrosis', 'edema', 'emphysema', 'pleural_thickening', 'consolitation', 'no finding']
@@ -71,8 +70,7 @@ def make_dataframe() -> pd.DataFrame:
     return all_data
 
 
-def split_bbox():
-    data: pd.DataFrame = make_dataframe()
+def split_bbox(data: pd.Dataframe):
     train: pd.DataFrame = data[
         data["img_name"].isin(get_train_val_data()[0])
     ].copy()
@@ -82,17 +80,16 @@ def split_bbox():
     bbox_patients = data[
         data["img_name"].isin(get_bbox_data()["img_name"])
     ]["patient_id"].unique()
-
     rng = np.random.default_rng(SEED)
     bbox_patients = rng.permutation(bbox_patients)
-    split = int(len(bbox_patients) * 0.8)
+    split = int(len(bbox_patients) * 0.6)
     train_bbox_patients = set(bbox_patients[:split])
     bbox_rows = test[
         test["patient_id"].isin(train_bbox_patients)
     ]
     train = pd.concat([train, bbox_rows])
     test = test[~test["patient_id"].isin(train_bbox_patients)]
-
+    # print(len(train) / len(data) * 100)
     return train, test
     
 
@@ -150,7 +147,7 @@ class XrayCV:
         self.k_folds = k_folds
         self.data: pd.DataFrame = make_dataframe()
         self.data["img_path"] = get_image_path() + "/" + self.data["img_name"]
-        self.train, self.test = split_bbox()
+        self.train, self.test = split_bbox(self.data)
         self.diseases: list[str] = sorted(
             self.data["diseases"].str.split("|").explode().unique()
         )
