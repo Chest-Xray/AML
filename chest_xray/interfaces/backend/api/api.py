@@ -36,8 +36,7 @@ app.add_middleware(
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-MODEL_PATH = r"C:\AML\AML\chest_xray\interfaces\backend\api\densenet_pretrained_epoch10.pth"
-
+MODEL_PATH = "api/densenet_pretrained_epoch10.pth"
 
 def create_model():
     model = models.densenet161(weights=None)
