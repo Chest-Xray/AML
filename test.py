@@ -14,8 +14,7 @@ def main():
     test_transform = classifier.modelTrainer.transform_images(classifier.modelTrainer.image_size)
     train_loader, test_loader = classifier.modelTrainer.cv.test_loaders(train_transform, test_transform)
 
-    # path = classifier.trainModel_no_cv(train_loader, test_loader, CLASSIFIER_EPOCHS)
-    path = "/home/ids/Documents/uni/AML/chest_xray/data/modelsdensenet201_pretrained_epoch4.pth"
+    path = classifier.trainModel_no_cv(train_loader, test_loader, CLASSIFIER_EPOCHS)
     # train regressor
     regressor = XrayBboxBase("densenet201", model=load(path, weights_only=False))
     bbox_path = regressor.trainModel_no_cv(train_loader, test_loader, REGRESSOR_EPOCHS)
