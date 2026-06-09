@@ -1,12 +1,12 @@
 "use client"
 import { SubmitEvent, useState } from 'react';
 import uploadImage from '../services/uploadImage';
-import Image from 'next/image';
 
 
 export default function StartPage() {
   const [predictions, setPredictions] = useState<{ label: string; confidence: number }[]>([]);
-  const [returnedImages, setReturnedImages] = useState<string[]>([]);
+  const [returnedImages, setReturnedImages] = useState<{ label: string; image: string }[]>([]);
+  const [gradcamImages, setGradcamImages] = useState<{ label: string; image: string }[]>([]);
 
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -21,7 +21,8 @@ export default function StartPage() {
       const result = await uploadImage(formData);
       console.log("Upload result:", result);
       setPredictions(result.predictions);
-      setReturnedImages(result.bbox_images || []);
+        setReturnedImages(result.bbox_images || []);
+      setGradcamImages(result.gradcam_images || []);
       console.log("Predictions set:", predictions);
     } catch (error) {
       console.error("Upload failed:", error);
@@ -40,10 +41,32 @@ export default function StartPage() {
       <div className="results flex w-full flex-col md:flex-row items-start gap-6 mt-4 max-w-4xl">
       {returnedImages.length > 0 && (
         <div className="returned-image mt-4">
-          <h2 className="text-xl font-bold">Uploaded Images:</h2>
+          <h2 className="text-xl font-bold">Bounding Box Predictions:</h2>
+          <ul className="bbox-list mt-2">
           {returnedImages.map((img, index) => (
-            <Image key={index} src={`data:image/png;base64,${img}`} alt="Uploaded" className="max-w-full h-auto" width={500} height={500} />
+              <li key={index} className="mb-4">
+                <p className="text-lg mt-2">{img.label}</p>
+                <img
+                  src={`data:image/jpeg;base64,${img.image}`}
+                  alt={img.label}
+                  className="max-w-full h-auto border border-gray-700"
+                />
+              </li>
           ))}
+          </ul>
+        </div>
+      )}
+      {gradcamImages.length > 0 && (
+        <div className="gradcam-images mt-4">
+          <h2 className="text-xl font-bold">Grad-CAM Overlays:</h2>
+          <ul className="bbox-list mt-2">
+            {gradcamImages.map((g, idx) => (
+              <li key={idx} className="mb-4">
+                <p className="text-lg mt-2">{g.label}</p>
+                <img src={`data:image/jpeg;base64,${g.image}`} alt={g.label} className="max-w-full h-auto border border-red-500" />
+              </li>
+            ))}
+          </ul>
         </div>
       )}
       {predictions.length > 0 && (

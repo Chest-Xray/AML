@@ -20,8 +20,7 @@ CLASSES = (
     "No Finding",
 )
 
-MODEL_PATH = Path(__file__).resolve().parent / "densenet_pretrained_epoch10.pth"
-
+MODEL_PATH = Path(__file__).resolve().parent.parent.parent.parent / "data" / "models" / "modelsdensenet201_bbox_pretrained_epoch3.pth"
 
 
 def create_model(num_classes: int):

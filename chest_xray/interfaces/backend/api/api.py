@@ -1,11 +1,14 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from PIL import Image, ImageDraw
+from PIL import Image
 import torch
 import io
-from interfaces.backend.api.load_model import get_model, CLASSES
-import base64
-import tools.bbox as bbox_tools
+from chest_xray.interfaces.backend.api.load_model import get_model, CLASSES
+from chest_xray.interfaces.backend.api.helpers import (
+    build_bbox_images,
+    build_gradcam_images,
+)
+from typing import TypedDict
 
 app = FastAPI()
 
@@ -17,53 +20,63 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 model, transform, device = get_model()
+
+class PredictionItem(TypedDict):
+    label: str
+    confidence: float
+
+
+class BoxItem(TypedDict):
+    label: str
+    box: tuple[float, float, float, float]
+
+
+class ImageItem(TypedDict):
+    label: str
+    image: str
 
 
 @app.post("/prediction")
-async def create_prediction(file: UploadFile = File(...)):
-    print("Received file:", file.filename)
+async def prediction(file: UploadFile = File(...)):
+    contents = await file.read()
+    image = Image.open(io.BytesIO(contents)).convert("L")
 
-    image_bytes = await file.read()
-    
-    image = Image.open(io.BytesIO(image_bytes)).convert("L")
+    image_tensor = transform(image)
+    if not isinstance(image_tensor, torch.Tensor):
+        raise TypeError("transform(image) must return a torch.Tensor")
+    input_tensor = image_tensor.unsqueeze(0).to(device)
 
-    input_tensor = transform(image)
-    input_tensor = input_tensor.unsqueeze(0).to(device)
-
+    model.eval()
     with torch.no_grad():
-        outputs = model(input_tensor)
-        print("Model outputs:", outputs)
-        print("Output torch:", torch.sigmoid(outputs))
-        probabilities = torch.sigmoid(outputs)[0]
+        output = model(input_tensor)
 
-    all_predictions = []
-    bbox_images = []
+    bbox_predictions = None
+    if isinstance(output, (list, tuple)) and len(output) >= 2:
+        class_logits, bbox_predictions = output[0], output[1]
+    else:
+        class_logits = output
 
-    for class_name, probability in zip(CLASSES, probabilities):
-        all_predictions.append(
-            {"label": class_name, "confidence": float(probability.item())}
-        )
+    if not isinstance(class_logits, torch.Tensor):
+        class_logits = torch.tensor(class_logits)
+    if class_logits.dim() == 2:
+        class_logits = class_logits[0]
+
+    probs = torch.sigmoid(class_logits).cpu()
+
+    predictions: list[PredictionItem] = []
+    for i, p in enumerate(probs.tolist()):
+        predictions.append({"label": CLASSES[i], "confidence": float(p)})
         
-            
-        
+    predictions.sort(key=lambda x: x["confidence"], reverse=True)
 
-    predictions = sorted(
-        all_predictions, key=lambda item: item["confidence"], reverse=True
-    )
-    
-    for prediction in predictions:
-        bbox_image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        bbox_draw = ImageDraw.Draw(bbox_image)
-        if prediction["confidence"] > 0.5:  # Threshold for drawing bbox
-            bbox_tools.draw_bbox(bbox_draw, prediction["label"], 500, 500, 100, 100)
-            buffered = io.BytesIO()
-            bbox_image.save(buffered, format="JPEG")
-            bbox_images.append(base64.b64encode(buffered.getvalue()).decode("utf-8"))
-    
+    bbox_predictions = bbox_predictions[0]
+
+    bbox_images = build_bbox_images(image, bbox_predictions, predictions)
+    gbox_images = build_gradcam_images(image, input_tensor, predictions, model)
+
     return {
-        "filename": file.filename,
         "predictions": predictions,
         "bbox_images": bbox_images,
+        "gradcam_images": gbox_images,
     }

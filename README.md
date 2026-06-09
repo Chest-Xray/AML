@@ -44,16 +44,12 @@ pipenv install -r requirements.txt
 
 ## Running the backend
 
-Navigate to the chest_xray folder
-
-```bash
-cd chest_xray
-```
+Navigate to the root folder
 
 Start the backend server:
 
 ```bash
-python -m uvicorn interfaces.backend.api.api:app --reload
+python -m uvicorn chest_xray.interfaces.backend.api.api:app --reload
 ```
 
 The backend will run at:
@@ -107,13 +103,24 @@ Open this URL in your browser to upload chest X-ray images and receive predictio
 
 ### `POST /prediction`
 
-Uploads a chest X-ray image and returns model predictions.
+Uploads a chest X-ray image and returns model predictions, bbox images and gradcam images.
 
 Example response:
 
 ```json
 {
-  "filename": "example.png",
+  "bbox_images": [
+    {
+      "label": "Pneumonia",
+      "image": "base64 string"
+    }
+  ],
+  "gradcam_images": [
+    {
+      "label": "Pneumonia",
+      "image": "base64 string"
+    }
+  ],
   "predictions": [
     {
       "label": "Pneumonia",
@@ -134,7 +141,7 @@ Make sure the model file is available locally at the path expected by the backen
 Expected model path:
 
 ```text
-chest_xray/interfaces/backend/api/densenet_pretrained_epoch10.pth
+chest_xray/data/models/densenet_pretrained_epoch10.pth
 ```
 
 If the model file is not present, the backend will not be able to start or make predictions.

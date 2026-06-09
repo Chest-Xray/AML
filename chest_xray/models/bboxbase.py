@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 import torchvision.ops as ops
-from timm.loss import AsymmetricLossMultiLabel
+from timm.loss.asymmetric_loss import AsymmetricLossMultiLabel
 from typing import Literal
 from chest_xray.data.labels import CLASSES
 from tqdm import tqdm
