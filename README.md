@@ -44,16 +44,16 @@ pipenv install -r requirements.txt
 
 ## Running the backend
 
-Navigate to the backend API folder:
+Navigate to the chest_xray folder
 
 ```bash
-cd chest_xray/interfaces/backend/api
+cd chest_xray
 ```
 
 Start the backend server:
 
 ```bash
-python -m uvicorn api:app --reload
+python -m uvicorn interfaces.backend.api.api:app --reload
 ```
 
 The backend will run at:

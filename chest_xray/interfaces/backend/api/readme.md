@@ -1,8 +1,8 @@
 # API
 
 ## How to use
-- cd into the /api folder 
-- run: uvicorn api:app --reload
+- cd into chest_xray 
+- run: uvicorn interfaces.backend.api.api:app --reload
 ---
 
 ## Routes

@@ -6,7 +6,7 @@ import Image from 'next/image';
 
 export default function StartPage() {
   const [predictions, setPredictions] = useState<{ label: string; confidence: number }[]>([]);
-  const [returnedImage, setReturnedImage] = useState<string>("");
+  const [returnedImages, setReturnedImages] = useState<string[]>([]);
 
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -21,7 +21,7 @@ export default function StartPage() {
       const result = await uploadImage(formData);
       console.log("Upload result:", result);
       setPredictions(result.predictions);
-      setReturnedImage(result.image);
+      setReturnedImages(result.bbox_images || []);
       console.log("Predictions set:", predictions);
     } catch (error) {
       console.error("Upload failed:", error);
@@ -38,10 +38,12 @@ export default function StartPage() {
         </form>
       </div>
       <div className="results flex w-full flex-col md:flex-row items-start gap-6 mt-4 max-w-4xl">
-      {returnedImage && (
+      {returnedImages.length > 0 && (
         <div className="returned-image mt-4">
-          <h2 className="text-xl font-bold">Uploaded Image:</h2>
-          <Image src={`data:image/png;base64,${returnedImage}`} alt="Uploaded" className="max-w-full h-auto" width={500} height={500} />
+          <h2 className="text-xl font-bold">Uploaded Images:</h2>
+          {returnedImages.map((img, index) => (
+            <Image key={index} src={`data:image/png;base64,${img}`} alt="Uploaded" className="max-w-full h-auto" width={500} height={500} />
+          ))}
         </div>
       )}
       {predictions.length > 0 && (

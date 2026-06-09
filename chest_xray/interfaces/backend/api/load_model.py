@@ -50,12 +50,9 @@ def get_model(model_path: str = MODEL_PATH):
 
     model = create_model(len(CLASSES))
 
-    # accept Path or str; torch.load works with str, so coerce to str
     loaded = torch.load(str(model_path), map_location=device, weights_only=False)
 
-    # If saved object is a state_dict, load into model, else assume full model
     if isinstance(loaded, dict):
-        # support saving that stores 'state_dict' key
         if "state_dict" in loaded:
             state = loaded["state_dict"]
         else:
