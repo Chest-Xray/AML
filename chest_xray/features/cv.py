@@ -70,7 +70,7 @@ def make_dataframe() -> pd.DataFrame:
     return all_data
 
 
-def split_bbox(data: pd.Dataframe):
+def split_bbox(data: pd.DataFrame):
     train: pd.DataFrame = data[
         data["img_name"].isin(get_train_val_data()[0])
     ].copy()

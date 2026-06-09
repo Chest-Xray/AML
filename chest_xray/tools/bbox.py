@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
-from read_lists import get_bbox_data
+from chest_xray.tools.read_lists import get_bbox_data
 
 def get_images_path() -> str:
     """Get the path to all images relative to this file"""
@@ -16,16 +16,17 @@ def get_bbox_path() -> str:
 
 
 def draw_bbox(
-        draw: PIL.ImageDraw.ImageDraw,
+        draw: ImageDraw.ImageDraw,
         disease: str,
         x: float, y: float, w: float, h: float
     ) -> None:
     """Draw a bbox on the image"""
     draw.rectangle((x, y, x+w, y+h), outline = "blue", width = 2)
-    draw.text((x, y-5), disease, fill = "red")
+    font = ImageFont.load_default(20)
+    draw.text((x, y-25), disease, font=font, fill = "red")
 
 
-def draw_bboxes(img_path: str, group: str) -> PIL.Image.Image:
+def draw_bboxes(img_path: str, group: pd.DataFrame) -> Image.Image:
     """Draws all bboxes of a certain image"""
     img = Image.open(img_path).convert("RGB")
     draw = ImageDraw.Draw(img)
@@ -37,7 +38,7 @@ def draw_bboxes(img_path: str, group: str) -> PIL.Image.Image:
 
 def generate_bboxes() -> None:
     """Generate images with bboxes overlayed for all known bboxes"""
-    groups: pandas.api.typing.DataFrameGroupBy = get_bbox_data().groupby("img_name")
+    groups: pd.api.typing.DataFrameGroupBy = get_bbox_data().groupby("img_name")
     images_path: str = get_images_path()
     bboxes_path: str = get_bbox_path()
     i = 0
@@ -45,7 +46,7 @@ def generate_bboxes() -> None:
         i += 1
         print(f"processing image {i}: {img_name}")
         img_path: str = os.path.join(images_path, img_name)
-        img: PIL.Image.Image = draw_bboxes(img_path, group)
+        img: Image.Image = draw_bboxes(img_path, group)
         img.save(os.path.join(bboxes_path, img_name))
 
 

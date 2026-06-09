@@ -4,8 +4,11 @@ matplotlib
 numpy
 scikit-learn
 torch
+torchvision
 tqdm
 timm
 fastapi
 uvicorn
 python-multipart
+opencv-python
+grad-cam

@@ -49,14 +49,11 @@ pipenv install -r requirements.txt
 
 ---
 
-## Model File
-
-The trained model file may be too large to store directly in GitHub.
 
 Before starting the application, make sure the trained model file is available locally at the path expected by the backend:
 
 ```
-chest_xray/interfaces/backend/api/densenet_pretrained_epoch10.pth
+chest_xray/data/models/densenet_pretrained_epoch10.pth
 ```
 
 If this file is missing, the backend may fail to start or may not be able to make predictions.
@@ -87,10 +84,31 @@ API docs: http://localhost:8000/docs
 
 ## Using the Application
 
-Open the frontend in your browser:
+Uploads a chest X-ray image and returns model predictions, bbox images and gradcam images.
 
-```
-http://localhost:3000
+Example response:
+
+```json
+{
+  "bbox_images": [
+    {
+      "label": "Pneumonia",
+      "image": "base64 string"
+    }
+  ],
+  "gradcam_images": [
+    {
+      "label": "Pneumonia",
+      "image": "base64 string"
+    }
+  ],
+  "predictions": [
+    {
+      "label": "Pneumonia",
+      "confidence": 0.87
+    }
+  ]
+}
 ```
 
 To make a prediction:
