@@ -202,9 +202,9 @@ class XrayCV:
             )
 
 
-    def test_loaders(self, transform = None) -> tuple[XrayDataset, XrayDataset]:
-        train_set = XrayDataset(self.train, transform = transform, diseases=self.diseases)
-        test_set = XrayDataset(self.test, transform=None, diseases=self.diseases)
+    def test_loaders(self, train_transform, test_transform) -> tuple[XrayDataset, XrayDataset]:
+        train_set = XrayDataset(self.train, transform = train_transform, diseases=self.diseases)
+        test_set = XrayDataset(self.test, transform = test_transform, diseases=self.diseases)
         train_loader = DataLoader(
             train_set,
             batch_size=self.batch_size,

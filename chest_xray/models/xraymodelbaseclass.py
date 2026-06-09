@@ -131,9 +131,6 @@ class XrayClassifierBase(torch.nn.Module):
 
 
     def trainModel_no_cv(self, train_loader, val_loader, num_epochs):
-        transform = self.modelTrainer.transform_images(self.modelTrainer.image_size)
-
-    
         for epoch in range(num_epochs):
             train_loss = self.modelTrainer.train_one_epoch(
                 epoch, num_epochs, f"Fold {1}", train_loader
