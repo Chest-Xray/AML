@@ -1,8 +1,8 @@
 # API
 
 ## How to use
-- cd into chest_xray 
-- run: uvicorn interfaces.backend.api.api:app --reload
+- cd to root
+- run: uvicorn chest_xray.interfaces.backend.api.api:app --reload
 ---
 
 ## Routes

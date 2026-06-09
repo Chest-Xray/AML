@@ -9,8 +9,8 @@ services:
     command: npm run dev -- --hostname 0.0.0.0
 
   backend:
-    build: ./chest_xray/interfaces/backend
+    build: ./
     container_name: backend
     ports:
       - "8000:8000"
-    command: python -m uvicorn api.api:app --reload --host 0.0.0.0 --port 8000
+    command: python -m uvicorn chest_xray.interfaces.backend.api.api:app --reload --host 0.0.0.0 --port 8000
