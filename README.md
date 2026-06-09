@@ -53,7 +53,7 @@ pipenv install -r requirements.txt
 Before starting the application, make sure the trained model file is available locally at the path expected by the backend:
 
 ```
-chest_xray/interfaces/backend/api/densenet_pretrained_epoch10.pth
+chest_xray/data/models/densenet_pretrained_epoch10.pth
 ```
 
 If this file is missing, the backend may fail to start or may not be able to make predictions.
