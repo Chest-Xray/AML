@@ -53,7 +53,7 @@ class ModelTrainer:
             dynamic_ncols=True
         )
 
-        for batch_idx, (images, labels) in enumerate(progress_bar, start=1):
+        for batch_idx, (images, labels, _) in enumerate(progress_bar, start=1):
             images = images.to(self.device, non_blocking=True)
             labels = labels.to(self.device, non_blocking=True)
 
@@ -87,7 +87,7 @@ class ModelTrainer:
         )
 
         with torch.no_grad():
-            for batch_idx, (images, labels) in enumerate(progress_bar, start=1):
+            for batch_idx, (images, labels, _) in enumerate(progress_bar, start=1):
                 images = images.to(self.device, non_blocking=True)
                 labels = labels.to(self.device, non_blocking=True)
 
