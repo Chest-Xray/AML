@@ -130,6 +130,8 @@ def evaluate_model(
         "Total Parameters": total_params,
         "Trainable Parameters": trainable_params,
     }
+    print(summary)
+    print(results_df)
 
     return results_df, summary, confusion_matrices
 
@@ -230,5 +232,5 @@ def evaluate_bbox(
             bbox_summary[label] = {"mean_iou": float("nan"), "n_samples": 0}
 
     bbox_summary["mIoU"] = float(sum(per_disease_ious) / len(per_disease_ious)) if per_disease_ious else float("nan")
-
+    print(bbox_summary)
     return classification_results, classification_summary, confusion_matrices, bbox_summary
