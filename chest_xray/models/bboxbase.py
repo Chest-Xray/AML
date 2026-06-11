@@ -16,10 +16,10 @@ class BboxVGG(torch.nn.Module):
     def __init__(self, backbone: torch.nn.Module, num_classes: int) -> None:
         super().__init__()
         in_features: int = backbone.classifier[6].in_features
-        self.features   = backbone.features
-        self.avgpool    = backbone.avgpool
+        self.features = backbone.features
+        self.avgpool = backbone.avgpool
         self.classifier = backbone.classifier
-        self.bbox_head  = torch.nn.Linear(in_features, num_classes * 4)
+        self.bbox_head = torch.nn.Linear(in_features, num_classes * 4)
 
     def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         features = self.features(x)
@@ -27,7 +27,7 @@ class BboxVGG(torch.nn.Module):
         features = torch.flatten(features, 1)
         cls_logits = self.classifier(features)
         penultimate = self.classifier[:6](features)
-        bbox_pred   = self.bbox_head(penultimate).view(features.size(0), -1, 4)
+        bbox_pred = self.bbox_head(penultimate).view(features.size(0), -1, 4)
         return cls_logits, bbox_pred
 
 
