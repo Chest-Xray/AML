@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 from .read_lists import get_bbox_data
 
 

@@ -46,7 +46,6 @@ def build_bbox_images(
             if len(raw) != 4:
                 continue
 
-            # Commented conversion path: model predicts normalized xyxy.
             x1_n, y1_n, x2_n, y2_n = raw
             x1_n = max(0.0, min(1.0, float(x1_n)))
             y1_n = max(0.0, min(1.0, float(y1_n)))
