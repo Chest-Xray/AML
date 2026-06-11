@@ -4,7 +4,6 @@ from chest_xray.models.bboxbase import XrayBboxBase
 from chest_xray.tools.globals import *
 from chest_xray.data.labels import CLASSES
 from chest_xray.features.evaluation import evaluate_bbox
-from chest_xray.tools.visualize_evaluations import plot_confusion_matrices
 import os
 from pathlib import Path
 import sys
@@ -25,9 +24,6 @@ def load_model() -> XrayClassifierBase:
         classifier.device,
         disease_labels=CLASSES
     )
-    plot_confusion_matrices(m, "/home/ids/Documents/m.png")
-
-
 
 
 if __name__ == "__main__":

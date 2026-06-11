@@ -143,7 +143,7 @@ class XrayClassifierBase(torch.nn.Module):
                 f"Epoch {epoch+1}: "
                 f"Train {train_loss:.4f} | Val {val_loss:.4f}"
             )
-            path: str = f"{MODEL_PATH}{self.type}_{'pretrained' if self.pretrained else 'scratch'}_epoch{epoch}.pth"
+            path: str = f"{MODEL_PATH}/{self.type}_{'pretrained' if self.pretrained else 'scratch'}_epoch{epoch}.pth"
             torch.save(self.model, path)
             print(f"model saved: {path}")
         return path

@@ -274,7 +274,7 @@ class XrayBboxBase(XrayClassifierBase):
                 f"Val loss weighted (classification {val_loss_total*self.class_loss_weight:.4f}, bbox {val_loss_bbox*self.bbox_loss_weight:.4f}"
             )
             path = (
-                f"{MODEL_PATH}{self.type}_bbox_"
+                f"{MODEL_PATH}/{self.type}_bbox_"
                 f"{'pretrained' if self.pretrained else 'scratch'}_epoch{epoch}.pth"
             )
             paths.append(path)
