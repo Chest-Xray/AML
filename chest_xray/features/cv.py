@@ -69,7 +69,7 @@ def make_dataframe() -> pd.DataFrame:
     return all_data
 
 
-def split_bbox(data: pd.Dataframe):
+def split_bbox(data: pd.DataFrame):
     """
     Only the test set provided by the authors contains bbox data.
     This function takes all patient id's that have at least one associated bbox,

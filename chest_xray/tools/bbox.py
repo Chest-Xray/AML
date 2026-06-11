@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from PIL import Image, ImageDraw
-from read_lists import get_bbox_data
+from .read_lists import get_bbox_data
 
 
 def get_images_path() -> str:
