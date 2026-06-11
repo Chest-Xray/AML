@@ -238,13 +238,11 @@ class XrayBboxBase(XrayClassifierBase):
                 )
                 torch.save(self.model, path)
                 print(f"Model saved: {path}")
-            results_df, summary, confusion_matrices, bbox_summary = self.evaluate(val_loader)
+            self.evaluate(val_loader)
 
     
 
     def trainModel_no_cv(self, train_loader, val_loader, max_epochs) -> None:
-        transform = self.modelTrainer.transform_images(self.modelTrainer.image_size)
-
         path = ''
         train_losses = []
         val_losses = []
@@ -300,9 +298,3 @@ class XrayBboxBase(XrayClassifierBase):
         print("\nbbox summary")
         print(bbox_summary)
         return results_df, summary, confusion_matrices, bbox_summary
-
-if __name__ == "__main__":
-    path = MODEL_PATH / "densenet_pretrained_epoch10.pth"
-    bbox = XrayBboxBase("densenet161", model=load(path, weights_only=False))
-    bbox.trainModel()
-    
