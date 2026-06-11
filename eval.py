@@ -1,11 +1,9 @@
-
 from chest_xray.models.xraymodelbaseclass import XrayClassifierBase
 from chest_xray.models.bboxbase import XrayBboxBase
 from chest_xray.tools.globals import *
 from chest_xray.data.labels import CLASSES
 from chest_xray.features.evaluation import evaluate_bbox
-import os
-from pathlib import Path
+
 import sys
 from torch import load
 

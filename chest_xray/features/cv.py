@@ -2,9 +2,8 @@ import numpy as np
 import pandas as pd
 import pickle
 import torch
-from collections.abc import Iterator, Callable
+from collections.abc import Iterator
 from torch.utils.data import DataLoader
-from torchvision.transforms import v2
 from os.path import abspath, dirname, exists, normpath, join
 from .read_lists import get_data, get_train_val_data, get_test_data, get_bbox_data
 from .dataset import XrayDataset
