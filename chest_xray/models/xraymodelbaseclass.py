@@ -131,9 +131,6 @@ class XrayClassifierBase(torch.nn.Module):
 
 
     def trainModel_no_cv(self, train_loader, val_loader, num_epochs):
-        transform = self.modelTrainer.transform_images(self.modelTrainer.image_size)
-
-    
         for epoch in range(num_epochs):
             train_loss = self.modelTrainer.train_one_epoch(
                 epoch, num_epochs, f"Fold {1}", train_loader
@@ -146,7 +143,7 @@ class XrayClassifierBase(torch.nn.Module):
                 f"Epoch {epoch+1}: "
                 f"Train {train_loss:.4f} | Val {val_loss:.4f}"
             )
-            path: str = f"{MODEL_PATH}{self.type}_{'pretrained' if self.pretrained else 'scratch'}_epoch{epoch}.pth"
+            path: str = f"{MODEL_PATH}/{self.type}_{'pretrained' if self.pretrained else 'scratch'}_epoch{epoch}.pth"
             torch.save(self.model, path)
             print(f"model saved: {path}")
         return path

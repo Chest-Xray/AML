@@ -1,7 +1,9 @@
 import os
 import pandas as pd
-from PIL import Image, ImageDraw, ImageFont
-from chest_xray.tools.read_lists import get_bbox_data
+import PIL
+from PIL import Image, ImageDraw
+from read_lists import get_bbox_data
+
 
 def get_images_path() -> str:
     """Get the path to all images relative to this file"""

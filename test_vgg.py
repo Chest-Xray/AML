@@ -9,14 +9,14 @@ REGRESSOR_EPOCHS = 25
 
 def main():
     # train classifier
-    classifier = XrayClassifierBase(type='densenet201', pretrained=True)
+    classifier = XrayClassifierBase(type="vgg16")
     train_transform = classifier.modelTrainer.trainsform_train(classifier.modelTrainer.image_size)
     test_transform = classifier.modelTrainer.transform_images(classifier.modelTrainer.image_size)
     train_loader, test_loader = classifier.modelTrainer.cv.test_loaders(train_transform, test_transform)
 
     path = classifier.trainModel_no_cv(train_loader, test_loader, CLASSIFIER_EPOCHS)
     # train regressor
-    regressor = XrayBboxBase("densenet201", model=load(path, weights_only=False))
+    regressor = XrayBboxBase("vgg16", model=load(path, weights_only=False))
     bbox_path = regressor.trainModel_no_cv(train_loader, test_loader, REGRESSOR_EPOCHS)
     results_df, summary, confusion_matrices, bbox_summary = regressor.evaluate(test_loader)
     
