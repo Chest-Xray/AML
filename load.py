@@ -1,4 +1,3 @@
-
 from chest_xray.models.xraymodelbaseclass import XrayClassifierBase
 from chest_xray.models.bboxbase import XrayBboxBase
 from chest_xray.tools.globals import *
