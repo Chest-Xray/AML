@@ -23,6 +23,7 @@ CLASSES = (
 MODEL_PATH = Path(__file__).resolve().parent.parent.parent.parent / "data" / "models" / "chest_xray_bbox.pth"
 
 
+
 def create_model(num_classes: int):
     model = models.densenet161(weights=None)
 
