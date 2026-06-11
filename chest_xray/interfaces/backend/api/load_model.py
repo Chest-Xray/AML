@@ -20,7 +20,8 @@ CLASSES = (
     "No Finding",
 )
 
-MODEL_PATH = Path(__file__).resolve().parent.parent.parent.parent / "data" / "models" / "modelsdensenet201_bbox_pretrained_epoch2.pth"
+MODEL_PATH = Path(__file__).resolve().parent.parent.parent.parent / "data" / "models" / "chest_xray_bbox.pth"
+
 
 
 def create_model(num_classes: int):
