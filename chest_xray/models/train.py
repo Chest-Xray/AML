@@ -1,12 +1,9 @@
-import pandas as pd
 import torch
 from ..features.cv import XrayCV
 from collections.abc import Iterator
 from torch.utils.data import DataLoader
-from torchvision import transforms
 from tqdm import tqdm
 from pathlib import Path
-from chest_xray.data.chestdataset import ChestXRayDataset
 from chest_xray.data.labels import CLASSES
 from chest_xray.tools.globals import *
 from torchvision.transforms import v2
@@ -27,14 +24,6 @@ class ModelTrainer:
         self.cv = XrayCV(BATCH_SIZE, SEED, NUM_WORKERS, K_FOLDS)
 
 
-    # def transform_images(self, image_size):
-    #     return transforms.Compose([
-    #         transforms.Resize((image_size, image_size)),
-    #         transforms.Grayscale(num_output_channels=1),
-    #         transforms.ToTensor(),
-    #         transforms.Normalize(mean=[0.449], std=[0.226]),
-    #     ])
-    
     def transform_images(self, image_size):
         return v2.Compose([
             v2.ToImage(),

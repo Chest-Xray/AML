@@ -71,6 +71,11 @@ def make_dataframe() -> pd.DataFrame:
 
 
 def split_bbox(data: pd.Dataframe):
+    """
+    Only the test set provided by the authors contains bbox data.
+    This function takes all patient id's that have at least one associated bbox,
+    splits those 60/40, and moves the 60% to the train set
+    """
     train: pd.DataFrame = data[
         data["img_name"].isin(get_train_val_data()[0])
     ].copy()
@@ -99,6 +104,7 @@ def calculate_stats(loader):
     """
     Calculate mean and standard deviation on images
     to do normalization later
+    Deprecated as we normalize using DenseNet mean and std
     """
     sum_: float = 0.0
     sum_sq: float = 0.0
@@ -113,7 +119,10 @@ def calculate_stats(loader):
 
 
 def get_normalization_stats(loader):
-    """Check if a pickle with mean and std already exists"""
+    """
+    Check if a pickle with mean and std already exists
+    Deprecated as we use DenseNet mean and std instead
+    """
     script_path: str = dirname(abspath(__file__))
     pickle_path: str = normpath(
         join(script_path, "../data/pickles/mean_std.pkl")
@@ -203,6 +212,10 @@ class XrayCV:
 
 
     def test_loaders(self, train_transform, test_transform) -> tuple[XrayDataset, XrayDataset]:
+        """
+        Return dataloaders for training and testing
+        DON'T USE FOR CROSS-VALIDATION
+        """
         train_set = XrayDataset(self.train, transform = train_transform, diseases=self.diseases)
         test_set = XrayDataset(self.test, transform = test_transform, diseases=self.diseases)
         train_loader = DataLoader(
@@ -220,8 +233,3 @@ class XrayCV:
             pin_memory=torch.cuda.is_available()
         )
         return train_loader, test_loader
-
-
-
-if __name__ == "__main__":
-    split_bbox()

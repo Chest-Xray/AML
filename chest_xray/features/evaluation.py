@@ -186,7 +186,10 @@ def evaluate_bbox(
         return torch.stack([x, y, x + w, y + h], dim=-1)
 
     def paired_iou(pred_boxes: torch.Tensor, gt_boxes: torch.Tensor) -> torch.Tensor:
-        """IoU between pred[i] and gt[i] for each i. Input shape: (K, 4) xyxy."""
+        """
+        Calculate Intersection over Union for each sample
+        Input tensors must have shape 15x4 (15 classes, x1, y1, x2, y2)
+        """
         inter_x1 = torch.max(pred_boxes[:, 0], gt_boxes[:, 0])
         inter_y1 = torch.max(pred_boxes[:, 1], gt_boxes[:, 1])
         inter_x2 = torch.min(pred_boxes[:, 2], gt_boxes[:, 2])

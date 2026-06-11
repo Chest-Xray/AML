@@ -1,6 +1,7 @@
 import os
 import pandas as pd
-from PIL import Image, ImageDraw, ImageFont
+import PIL
+from PIL import Image, ImageDraw
 from read_lists import get_bbox_data
 
 def get_images_path() -> str:
@@ -37,7 +38,7 @@ def draw_bboxes(img_path: str, group: str) -> PIL.Image.Image:
 
 def generate_bboxes() -> None:
     """Generate images with bboxes overlayed for all known bboxes"""
-    groups: pandas.api.typing.DataFrameGroupBy = get_bbox_data().groupby("img_name")
+    groups: pd.api.typing.DataFrameGroupBy = get_bbox_data().groupby("img_name")
     images_path: str = get_images_path()
     bboxes_path: str = get_bbox_path()
     i = 0
