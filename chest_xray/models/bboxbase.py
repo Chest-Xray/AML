@@ -9,7 +9,6 @@ from ..tools.globals import *
 from ..features.evaluation import evaluate_bbox
 from .xraymodelbaseclass import XrayClassifierBase
 from .train import ModelTrainer
-from torch import load
 
 
 class BboxVGG(torch.nn.Module):
