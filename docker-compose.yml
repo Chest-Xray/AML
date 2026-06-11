@@ -1,0 +1,16 @@
+services:
+  frontend:
+    build: ./chest_xray/interfaces/frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    command: npm run dev -- --hostname 0.0.0.0
+
+  backend:
+    build: ./
+    container_name: backend
+    ports:
+      - "8000:8000"
+    command: python -m uvicorn chest_xray.interfaces.backend.api.api:app --reload --host 0.0.0.0 --port 8000

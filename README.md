@@ -1,6 +1,8 @@
 # ChestXrays
 
-This project detects and classifies diseases from chest X-ray images and returns a prediction.
+ChestXrays is an application that detects and classifies possible diseases from chest X-ray images using a trained machine learning model.
+
+The project includes a frontend for uploading images, a backend API for processing predictions, and a REST API that connects both parts of the application.
 
 ---
 
@@ -8,22 +10,25 @@ This project detects and classifies diseases from chest X-ray images and returns
 
 This project contains:
 
-- A frontend for uploading chest X-ray images
-- A backend API that loads the trained model and makes predictions
-- A REST API for communication between the frontend and backend
+* A frontend where users can upload chest X-ray images
+* A backend API that loads a trained model and returns predictions
+* A REST API for communication between the frontend and backend
+* Docker Compose configuration to run the full application easily
 
-Users can upload an image through the frontend. The image is sent to the backend, where the model generates predictions and sends the result back to the frontend.
+Users upload a chest X-ray image through the frontend. The image is sent to the backend API, where the trained model analyzes it and returns a prediction result.
 
 ---
 
 ## Requirements
 
-Make sure you have the following installed:
+Make sure the following tools are installed on your system:
 
-- Python
-- Pipenv
-- Node.js
-- npm
+* Python
+* Pipenv
+* Node.js
+* npm
+* Docker Engine or Docker Desktop
+* Docker Compose
 
 ---
 
@@ -31,89 +36,72 @@ Make sure you have the following installed:
 
 Clone the repository:
 
-```bash
+```
 git clone https://github.com/Chest-Xray/AML.git
-cd <your_project_folder>
+cd AML
 ```
 
 Install the Python dependencies:
 
-```bash
+```
 pipenv install -r requirements.txt
 ```
 
-## Running the backend
+---
 
-Navigate to the backend API folder:
 
-```bash
-cd chest_xray/interfaces/backend/api
+Before starting the application, make sure the trained model file is available locally at the path expected by the backend:
+
+```
+chest_xray/data/models/chest_xray_bbox.pth
 ```
 
-Start the backend server:
-
-```bash
-python -m uvicorn api:app --reload
-```
-
-The backend will run at:
-
-```text
-http://127.0.0.1:8000
-```
-
-## Running the frontend
-
-Open a second terminal and navigate to the frontend folder:
-
-```bash
-cd chest_xray/interfaces/frontend/image-uploader
-```
-
-Install required npm packages for the backend:
-```bash
-npm install
-```
-
-Start the frontend development server:
-
-```bash
-npm run dev
-```
-
-The frontend will run at:
-
-```text
-http://localhost:3000
-```
-
-Open this URL in your browser to upload chest X-ray images and receive predictions.
+If this file is missing, the backend may fail to start or may not be able to make predictions.
 
 ---
 
-## Usage
+## Running the Application
 
-1. Start the backend server
-2. Start the frontend server
-3. Open the frontend in your browser via the link in the terminal
-4. Click the `browse` button to select an image
-5. Click the `upload` button to upload the image to the backend
-6. Use your browser's inspect tool to view the console
-7. A json string will be returned with the predictions
+Navigate to the root folder of the project, where the `docker-compose.yml` file is located.
+
+Start the application with:
+
+```
+docker compose up --build
+```
+
+Docker Compose will build and start the required containers.
+
+After the containers have started, the application will be available at:
+
+```
+Frontend: http://localhost:3000
+Backend:  http://localhost:8000
+API docs: http://localhost:8000/docs
+```
 
 ---
 
-## API Endpoint
+## Using the Application
 
-### `POST /prediction`
-
-Uploads a chest X-ray image and returns model predictions.
+Uploads a chest X-ray image and returns model predictions, bbox images and gradcam images.
 
 Example response:
 
 ```json
 {
-  "filename": "example.png",
+  "bbox_images": [
+    {
+      "label": "Pneumonia",
+      "image": "base64 string"
+    }
+  ],
+  "gradcam_images": [
+    {
+      "label": "Pneumonia",
+      "image": "base64 string"
+    }
+  ],
   "predictions": [
     {
       "label": "Pneumonia",
@@ -123,26 +111,38 @@ Example response:
 }
 ```
 
+To make a prediction:
+
+1. Click **Choose File**
+2. Select a chest X-ray image from your computer
+3. Click the **Upload** button
+4. Wait for the prediction result to appear
+
+The backend will process the image and return the predicted disease label with a confidence score.
+
 ---
 
-## Model file
+## API Endpoints
 
-The trained model file may be too large to store directly in GitHub.
+The backend API documentation is available at:
 
-Make sure the model file is available locally at the path expected by the backend before starting the API.
-
-Expected model path:
-
-```text
-chest_xray/interfaces/backend/api/densenet_pretrained_epoch10.pth
+```
+http://localhost:8000/docs
 ```
 
-If the model file is not present, the backend will not be able to start or make predictions.
+## Project Structure
 
----
+A simplified overview of the project structure:
 
-## Notes
-
-- The backend must be running before using the frontend.
-- The frontend sends uploaded images to the backend API.
-- The backend returns the model predictions as JSON.
+```
+AML/
+├── chest_xray/
+│   └── interfaces/
+│       ├── backend/
+│       │   └── api/
+│       │       └── densenet_pretrained_epoch10.pth
+│       └── frontend/
+├── docker-compose.yml
+├── requirements.txt
+└── README.md
+```

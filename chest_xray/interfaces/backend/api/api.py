@@ -2,26 +2,13 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 import torch
-from torchvision import models, transforms
 import io
-
-CLASSES = (
-    "Hernia",
-    "Pneumonia",
-    "Fibrosis",
-    "Effusion",
-    "Edema",
-    "Emphysema",
-    "Mass",
-    "Nodule",
-    "Atelectasis",
-    "Cardiomegaly",
-    "Infiltration",
-    "Pleural_Thickening",
-    "Consolidation",
-    "Pneumothorax",
-    "No Finding",
+from chest_xray.interfaces.backend.api.load_model import get_model, CLASSES
+from chest_xray.interfaces.backend.api.helpers import (
+    build_bbox_images,
+    build_gradcam_images,
 )
+from typing import TypedDict
 
 app = FastAPI()
 
@@ -33,75 +20,63 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+model, transform, device = get_model()
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+class PredictionItem(TypedDict):
+    label: str
+    confidence: float
 
-MODEL_PATH = r"C:\AML\AML\chest_xray\interfaces\backend\api\densenet_pretrained_epoch10.pth"
+
+class BoxItem(TypedDict):
+    label: str
+    box: tuple[float, float, float, float]
 
 
-def create_model():
-    model = models.densenet161(weights=None)
+class ImageItem(TypedDict):
+    label: str
+    image: str
 
-    # Replace classifier to match your number of classes
-    model.classifier = torch.nn.Linear(
-        model.classifier.in_features,
-        len(CLASSES)
-    )
-
-    # Replace first convolution layer for grayscale images
-    old_first_layer = model.features[0]
-
-    new_first_layer = torch.nn.Conv2d(
-        in_channels=1,
-        out_channels=old_first_layer.out_channels,
-        kernel_size=old_first_layer.kernel_size,
-        stride=old_first_layer.stride,
-        padding=old_first_layer.padding,
-        bias=old_first_layer.bias is not None,
-    )
-
-    model.features[0] = new_first_layer
-
-    return model
-
-model = torch.load(MODEL_PATH, map_location=device, weights_only=False)
-model = model.to(device)
-model.eval()
-
-transform = transforms.Compose([
-    transforms.Resize((512, 512)),
-    transforms.ToTensor(),
-])
 
 @app.post("/prediction")
-async def create_prediction(file: UploadFile = File(...)):
-    print("Received file:", file.filename)
+async def prediction(file: UploadFile = File(...)):
+    contents = await file.read()
+    image = Image.open(io.BytesIO(contents)).convert("L")
 
-    image_bytes = await file.read()
-    image = Image.open(io.BytesIO(image_bytes)).convert("L")
+    image_tensor = transform(image)
+    if not isinstance(image_tensor, torch.Tensor):
+        raise TypeError("transform(image) must return a torch.Tensor")
+    input_tensor = image_tensor.unsqueeze(0).to(device)
 
-    input_tensor = transform(image)
-    input_tensor = input_tensor.unsqueeze(0).to(device)
-
+    model.eval()
     with torch.no_grad():
-        outputs = model(input_tensor)
-        probabilities = torch.sigmoid(outputs)[0]
+        output = model(input_tensor)
 
-    all_predictions = []
+    bbox_predictions = None
+    if isinstance(output, (list, tuple)) and len(output) >= 2:
+        class_logits, bbox_predictions = output[0], output[1]
+    else:
+        class_logits = output
 
-    for class_name, probability in zip(CLASSES, probabilities):
-        all_predictions.append({
-            "label": class_name,
-            "confidence": float(probability.item())
-        })
+    if not isinstance(class_logits, torch.Tensor):
+        class_logits = torch.tensor(class_logits)
+    if class_logits.dim() == 2:
+        class_logits = class_logits[0]
 
-    predictions = sorted(
-        all_predictions,
-        key=lambda item: item["confidence"],
-        reverse=True
-    )
+    probs = torch.sigmoid(class_logits).cpu()
+
+    predictions: list[PredictionItem] = []
+    for i, p in enumerate(probs.tolist()):
+        predictions.append({"label": CLASSES[i], "confidence": float(p)})
+        
+    predictions.sort(key=lambda x: x["confidence"], reverse=True)
+
+    bbox_predictions = bbox_predictions[0]
+
+    bbox_images = build_bbox_images(image, bbox_predictions, predictions)
+    gbox_images = build_gradcam_images(image, input_tensor, predictions, model)
 
     return {
-        "filename": file.filename,
         "predictions": predictions,
+        "bbox_images": bbox_images,
+        "gradcam_images": gbox_images,
     }

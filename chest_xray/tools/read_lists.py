@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-import PIL
 from collections.abc import Iterator
 
 ######################
@@ -99,20 +98,7 @@ def read_data_lines() -> Iterator[
 ]:
     """
     Read list of samples provided by the NIH Chest X-ray dataset authors
-    Skips the header row and yields one parsed samples record per line.
-    Yields:
-        A tuple containing:
-        - image filename
-        - disease labels
-        - follow up number
-        - patient id
-        - patient age
-        - patient gender
-        - X-ray view position
-        - original image width
-        - original image height
-        - original image width scaling
-        - original image height scaling
+    Yield a sample containing all metadata
     """
     with open(get_data_list()) as file:
         for line in file:

@@ -1,4 +1,0 @@
-#!/bin/bash
-
-module load PyTorch-bundle/2.1.2-foss-2023a-CUDA-12.1.1
-
